@@ -1,0 +1,323 @@
+.landing-page {
+  min-height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 5.4vw;
+  display: flex;
+  flex-direction: column;
+}
+.landing-header {
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.secure-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.secure-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 12px rgba(117, 217, 164, 0.5);
+}
+.landing-hero {
+  min-height: calc(100vh - 160px);
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 30px;
+  padding: 30px 0;
+}
+.hero-copy {
+  max-width: 570px;
+  position: relative;
+  z-index: 2;
+}
+.hero-copy > .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ember-line {
+  width: 25px;
+  height: 1px;
+  background: var(--ember);
+}
+.hero-copy h1 {
+  margin: 18px 0;
+  font-size: clamp(48px, 7.4vw, 92px);
+  line-height: 0.99;
+  letter-spacing: -0.075em;
+  font-weight: 700;
+}
+.hero-copy h1 span {
+  color: #8e827b;
+}
+.hero-description {
+  max-width: 460px;
+  color: #b1a7a0;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.login-button {
+  margin-top: 12px;
+  min-height: 52px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+.discord-icon {
+  font-size: 19px;
+}
+.privacy-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  color: #918780;
+  font-size: 11px;
+}
+.privacy-note span {
+  color: var(--green);
+  font-size: 16px;
+}
+.inline-alert {
+  margin: 14px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 117, 106, 0.3);
+  border-radius: 9px;
+  background: rgba(255, 117, 106, 0.07);
+  color: #ffb5ad;
+}
+.hero-visual {
+  height: min(540px, 70vw);
+  min-height: 390px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.hero-glow {
+  position: absolute;
+  width: 310px;
+  height: 310px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(240, 75, 47, 0.24),
+    rgba(240, 75, 47, 0.06) 48%,
+    transparent 72%
+  );
+  filter: blur(5px);
+}
+.orbit {
+  position: absolute;
+  border: 1px solid rgba(240, 75, 47, 0.17);
+  border-radius: 50%;
+  transform: rotate(-25deg);
+}
+.orbit-one {
+  width: min(80%, 440px);
+  height: 195px;
+}
+.orbit-two {
+  width: min(92%, 510px);
+  height: 275px;
+  border-color: rgba(255, 178, 30, 0.11);
+  transform: rotate(29deg);
+}
+.hero-core {
+  position: relative;
+  width: 190px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(240, 75, 47, 0.32);
+  border-radius: 28px;
+  background: linear-gradient(160deg, rgba(38, 30, 27, 0.94), rgba(20, 18, 17, 0.88));
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.52),
+    0 0 70px rgba(240, 75, 47, 0.1),
+    inset 0 0 32px rgba(240, 75, 47, 0.08);
+  transform: rotate(-7deg);
+}
+.hero-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  font-size: 22px;
+}
+.hero-core strong {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+}
+.hero-core > span:last-child {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+.float-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+  background: rgba(28, 25, 23, 0.88);
+  box-shadow: 0 15px 38px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+}
+.float-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+.float-status {
+  right: 8%;
+  top: 18%;
+  min-width: 168px;
+}
+.float-status strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+}
+.float-status > b {
+  margin-left: auto;
+  color: var(--green);
+  font-size: 9px;
+}
+.float-servers {
+  left: 5%;
+  bottom: 18%;
+  display: grid;
+  grid-template-columns: repeat(3, 27px) auto;
+  align-items: center;
+  gap: 5px 8px;
+}
+.float-servers small {
+  grid-column: 1/-1;
+}
+.float-servers > span {
+  margin-left: 4px;
+  color: #c9beb7;
+  font-size: 10px;
+}
+.mini-server {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #442d24;
+  color: #ffc47d;
+  font-size: 11px;
+  font-weight: 700;
+}
+.mini-two {
+  background: #282e3e;
+  color: #aebaff;
+}
+.mini-three {
+  background: #302c28;
+  color: var(--gold);
+}
+.spark {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 14px var(--gold);
+}
+.spark-one {
+  top: 28%;
+  left: 16%;
+}
+.spark-two {
+  right: 18%;
+  bottom: 25%;
+  background: var(--ember);
+  box-shadow: 0 0 14px var(--ember);
+}
+.landing-footer {
+  min-height: 68px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: #817872;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.landing-footer span:first-child {
+  letter-spacing: 0.13em;
+}
+@media (max-width: 900px) {
+  .landing-hero {
+    grid-template-columns: 1fr 0.75fr;
+  }
+  .hero-visual {
+    min-height: 350px;
+  }
+  .hero-copy h1 {
+    font-size: clamp(46px, 8vw, 72px);
+  }
+}
+@media (max-width: 700px) {
+  .landing-page {
+    padding: 0 18px;
+  }
+  .landing-header {
+    height: 68px;
+  }
+  .landing-hero {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 48px 0 20px;
+  }
+  .hero-copy {
+    max-width: none;
+  }
+  .hero-copy h1 {
+    font-size: clamp(48px, 14vw, 72px);
+  }
+  .hero-description {
+    font-size: 14px;
+  }
+  .hero-visual {
+    height: 310px;
+    min-height: 310px;
+    order: 2;
+  }
+  .hero-core {
+    width: 150px;
+    height: 172px;
+  }
+  .float-status {
+    right: 2%;
+    top: 12%;
+  }
+  .float-servers {
+    left: 2%;
+    bottom: 12%;
+  }
+  .landing-footer {
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    padding: 14px 0;
+  }
+}

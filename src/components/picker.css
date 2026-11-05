@@ -1,0 +1,126 @@
+.picker-page {
+  min-height: 100vh;
+}
+.picker-header {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(18px, calc((100vw - 1180px) / 2));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.picker-user {
+  color: var(--muted);
+  font-size: 12px;
+}
+.picker-content {
+  width: min(100% - 36px, 1120px);
+  margin: 68px auto;
+}
+.picker-content h1 {
+  margin: 4px 0;
+  font-size: 40px;
+  letter-spacing: -0.05em;
+}
+.picker-content > p:not(.eyebrow) {
+  margin: 4px 0 24px;
+}
+.server-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.server-card {
+  min-height: 96px;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 13px;
+  padding: 17px;
+}
+.server-card:hover {
+  border-color: #68463a;
+  transform: translateY(-2px);
+}
+.server-picker-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+}
+.server-card-info {
+  min-width: 0;
+}
+.server-card-info strong,
+.server-card-info span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.server-card-info strong {
+  font-size: 14px;
+}
+.server-card-info span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.server-health {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  grid-column: 2;
+  grid-row: 2;
+  color: var(--muted);
+  font-size: 10px;
+}
+.server-health i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.server-health.offline i {
+  background: var(--danger);
+}
+.server-open {
+  grid-column: 3;
+  grid-row: 2;
+  color: var(--gold);
+}
+.server-card > .role-badge {
+  justify-self: end;
+  align-self: start;
+}
+.picker-empty {
+  max-width: 660px;
+  margin-top: 25px;
+  padding: 42px 25px;
+}
+.picker-empty .action-row {
+  margin-top: 19px;
+}
+@media (max-width: 700px) {
+  .picker-content {
+    margin: 40px auto;
+  }
+  .picker-content h1 {
+    font-size: 33px;
+  }
+  .server-grid {
+    grid-template-columns: 1fr;
+  }
+  .server-card {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+  }
+  .server-picker-avatar {
+    width: 48px;
+    height: 48px;
+  }
+  .picker-empty .action-row {
+    flex-direction: column;
+  }
+  .picker-empty .button {
+    width: 100%;
+  }
+}

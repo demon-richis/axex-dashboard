@@ -1,0 +1,1 @@
+{"routes":[{"path":"/","title":"Axex Dashboard"},{"path":"/servers","title":"Your servers"},{"path":"/servers/:guildId","title":"Server overview"},{"path":"/servers/:guildId/admins","title":"Admins"},{"path":"/servers/:guildId/audit","title":"Audit log"}]}
