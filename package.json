@@ -30,6 +30,7 @@
     "@tanstack/react-router": "1.170.41",
     "@tanstack/react-start": "^1.168.60",
     "@vercel/functions": "^3.10.1",
+    "animejs": "4.5.0",
     "drizzle-orm": "^0.45.3",
     "framer-motion": "^13.4.4",
     "react": "^19.2.0",
@@ -57,5 +58,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5"
-  }
+  },
+  "packageManager": "npm@10.9.9"
 }

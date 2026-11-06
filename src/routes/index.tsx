@@ -1,4 +1,5 @@
 import { LoadingSkeleton } from "../components/loading-skeleton";
+import { HeroDiorama } from "../components/hero-diorama";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import "../components/dashboard.css";
@@ -36,91 +37,86 @@ export const Route = createFileRoute("/")({
 function LandingPage() {
   const { signedIn, error } = Route.useLoaderData();
   return (
-    <main className="landing-page">
+    <div className="landing-page">
       <header className="landing-header">
-        <a className="brand" href="/">
+        <a className="brand" href="/" aria-label="Axex Dashboard home">
           <span className="brand-mark">AX</span>
           <span className="wordmark">
             AXEX <span className="brand-divider">/</span> DASHBOARD
           </span>
         </a>
-        <span className="secure-label">
-          <span className="secure-dot" />
-          Private by design
-        </span>
+        <div className="header-signature">
+          <span className="header-index">CONTROL SURFACE&nbsp; / &nbsp;001</span>
+          <span className="secure-label">
+            <span className="secure-dot" />
+            Private by design
+          </span>
+        </div>
       </header>
-      <section className="landing-hero">
-        <div className="hero-copy">
-          <p className="eyebrow">
-            <span className="ember-line" /> AXEX SERVER CONTROL
-          </p>
-          <h1>
-            Your servers,
-            <br />
-            <span>in one place.</span>
-          </h1>
-          <p className="hero-description">
-            A calm, secure view of your Axex communities. Check bot health, manage trusted admins,
-            and keep an eye on important changes.
-          </p>
-          {error && (
-            <div className="inline-alert" role="status">
-              {error === "state"
-                ? "Sign-in expired. Please try again."
-                : "Discord sign-in didn’t finish. Please try again."}
-            </div>
-          )}
-          <a
-            className="button button-primary login-button"
-            href={signedIn ? "/servers" : "/api/auth/discord"}
-          >
-            {signedIn ? (
-              "Open dashboard"
-            ) : (
-              <>
-                <span className="discord-icon" aria-hidden="true">
-                  ◉
-                </span>{" "}
-                Login with Discord <span aria-hidden="true">→</span>
-              </>
+      <main>
+        <section className="landing-hero" aria-labelledby="landing-title">
+          <div className="hero-copy">
+            <p className="eyebrow hero-kicker">
+              <span className="ember-line" /> OWNER-DEFINED SERVER CONTROL
+            </p>
+            <h1 id="landing-title">
+              Your servers.
+              <br />
+              <span>One clear view.</span>
+            </h1>
+            <p className="hero-description">
+              Keep Axex close to the signal. Check bot presence, manage trusted access, and review
+              important changes without the noise.
+            </p>
+            {error && (
+              <div className="inline-alert" role="status">
+                {error === "state"
+                  ? "Sign-in expired. Please try again."
+                  : "Discord sign-in didn’t finish. Please try again."}
+              </div>
             )}
-          </a>
-          <p className="privacy-note">
-            <span aria-hidden="true">⌑</span> We only ask Discord to confirm your identity.
-          </p>
-        </div>
-        <div className="hero-visual" aria-hidden="true">
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <div className="hero-glow" />
-          <div className="hero-core">
-            <span className="brand-mark hero-mark">AX</span>
-            <strong>AXEX</strong>
-            <span>SERVER CONTROL</span>
+            <a
+              className="button button-primary login-button"
+              href={signedIn ? "/servers" : "/api/auth/discord"}
+            >
+              <span>{signedIn ? "Open your control room" : "Continue with Discord"}</span>
+              <span className="login-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </a>
+            <p className="privacy-note">
+              <span className="privacy-lock" aria-hidden="true">
+                ◆
+              </span>
+              Discord confirms identity only. No bot token is stored here.
+            </p>
           </div>
-          <div className="float-card float-status">
-            <span className="status-dot" />
-            <div>
-              <small>BOT STATUS</small>
-              <strong>Connected</strong>
-            </div>
-            <b>●</b>
+          <HeroDiorama />
+        </section>
+        <section className="landing-principles" aria-label="Dashboard principles">
+          <div className="principle">
+            <span className="principle-index">01&nbsp; / &nbsp;IDENTITY</span>
+            <strong>Discord identify only</strong>
+            <span>Nothing more requested.</span>
           </div>
-          <div className="float-card float-servers">
-            <small>YOUR SERVERS</small>
-            <div className="mini-server">N</div>
-            <div className="mini-server mini-two">A</div>
-            <div className="mini-server mini-three">+</div>
-            <span>All in one view</span>
+          <div className="principle">
+            <span className="principle-index">02&nbsp; / &nbsp;ACCESS</span>
+            <strong>Owner-defined roles</strong>
+            <span>Permissions stay in your database.</span>
           </div>
-          <div className="spark spark-one" />
-          <div className="spark spark-two" />
-        </div>
-      </section>
+          <div className="principle">
+            <span className="principle-index">03&nbsp; / &nbsp;RECORD</span>
+            <strong>Changes leave a trace</strong>
+            <span>Admin actions appear in the audit log.</span>
+          </div>
+        </section>
+      </main>
       <footer className="landing-footer">
-        <span>AXEX DASHBOARD · D1</span>
+        <span>
+          <b className="footer-mark">AX</b> AXEX DASHBOARD <i>·</i> D1
+        </span>
         <span>Built for the people who keep communities safe.</span>
       </footer>
-    </main>
+    </div>
   );
 }

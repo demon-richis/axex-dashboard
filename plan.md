@@ -1,4 +1,4 @@
-# Axex Dashboard — D1 implementation plan
+# Axex Dashboard — D1 implementation and visual refinement plan
 
 ## Scope and architecture
 
@@ -10,22 +10,23 @@ The `dashboard` schema and its migration journal schema `dashboard_meta` are ind
 
 ## Design
 
-- **Design Movement:** Axex's own premium dark operations-console aesthetic, guided by the supplied portal design tokens.
-- **Core Principles:** quiet high-contrast surfaces; warm, sparing action color; direct server-first navigation; clear access-role and bot-health states.
-- **Color Philosophy:** near-black keeps the console focused; ember red-orange carries Axex identity; gold `#ffb21e` marks attention and primary calls; restrained green indicates healthy bot status.
-- **Layout Paradigm:** compact app shell with a persistent server rail/sidebar and broad operational canvas; on small screens the sidebar becomes a drawer.
-- **Signature Elements:** fine ember edge highlights; lightly translucent glass panels; small uppercase metadata labels and role/status chips.
-- **Interaction Philosophy:** visible focus, large touch targets, inline feedback, and no controls that appear interactive but do nothing.
-- **Animation:** 150–200 ms transitions only, with reduced-motion support; loading uses stable skeletons rather than spinners.
-- **Typography System:** Inter for interface text; medium-weight labels, restrained display sizing, tabular numerals for metrics and IDs.
-- **Brand Essence:** a focused control room for Axex server owners; secure, composed, precise.
-- **Brand Voice:** concise and calm. Examples: “Your servers, in one place.” “Axex is offline. Last seen 18 minutes ago.”
-- **Wordmark & Logo:** an angular double-chevron AX mark paired with a compact uppercase AXEX wordmark; use a CSS/SVG mark rather than an unrelated image.
-- **Signature Brand Color:** Axex ember `#f04b2f`, paired with gold `#ffb21e`.
+- **Design Movement:** Screenshot-guided industrial editorial design, borrowing from instrument panels and precision hardware rather than a generic SaaS landing-page kit.
+- **Core Principles:** deliberate asymmetry; a believable, tactile control-room surface; clear identity and access cues; a single confident 3D visual instead of scattered decorative cards.
+- **Color Philosophy:** preserve the existing near-black canvas and Axex ember/gold identity. Use a softer graphite field and fine low-contrast drafting lines for depth; reserve gold for the primary action and active signal, and green only for healthy state.
+- **Layout Paradigm:** keep the left-side editorial invitation but balance it with a visually anchored 3D server instrument on the right. Replace oversized blank space and floating generic widgets with a compact calibration rail, structured information bands, and intentional alignment.
+- **Signature Elements:** an exploded server-stack sculpture with visible front/side/top planes; thin orbital/measurement lines; tiny equipment-style index labels and status LEDs.
+- **Interaction Philosophy:** the 3D object reacts subtly to pointer movement and settles when focus leaves; the login path remains the most prominent action. All actual controls remain semantic, keyboard reachable, and at least 44px tall. Decorative 3D art is hidden from assistive technology.
+- **Animation:** use Anime.js v4.5.0 `createScope()` within React `useEffect()` and call `revert()` on cleanup. Animate CSS 3D `rotateX`, `rotateY`, `translateZ`, and restrained opacity/position reveals with slow, low-amplitude movement. Respect `prefers-reduced-motion` by skipping continuous motion and keeping the final still composition. No motion communicates status or gates a task. Follow the [official React integration](https://animejs.com/documentation/getting-started/using-with-react) and [CSS transform reference](https://animejs.com/documentation/animation/animatable-properties/css-transforms).
+- **Typography System:** retain Inter for readable controls and body text; use a larger, tightly tracked editorial headline and compact monospaced index labels for instrument details. Keep data IDs and counts tabular.
+- **Brand Essence:** a secure, precise control room for Axex server owners; composed, technical, trustworthy.
+- **Brand Voice:** short, direct, and quietly confident. Examples: “Your servers. One clear view.” “Only trusted access gets through.”
+- **Wordmark & Logo:** retain the custom angular AX tile and compact AXEX wordmark, but pair it with deliberate spacing and a small instrument-index label rather than a default text-only brand.
+- **Signature Brand Color:** Axex ember `#f04b2f`, with gold `#ffb21e` kept as the rare high-attention accent.
 
 ## Project structure
 
 - `src/routes/`: landing, server picker, guild shell and admin/audit pages, plus API endpoints.
+- `src/components/`: reusable dashboard shell and the landing-page 3D server instrument.
 - `src/lib/`: request security, OAuth/session, DB schema/client, access checks, rate-limits, and domain data operations.
 - `drizzle/`: schema-scoped SQL migrations and Drizzle metadata, isolated under `dashboard_meta`.
 - `test/`: `node:test` unit/integration tests using PGlite and mocked Discord HTTP.
@@ -33,4 +34,4 @@ The `dashboard` schema and its migration journal schema `dashboard_meta` are ind
 
 ## Delivery constraints
 
-Use the authenticated owner's GitHub access to work directly on each repository's `main`; preserve concurrent remote commits, never force-push, and use small commits. Before each push, both affected repositories must pass their specified checks; dashboard checks are `npm test`, `npm run check`, and `npm run build`, while bot checks are `npm test` and `npm run check`. Do not run migrations, create Vercel deployments, or claim browser verification unless performed.
+Use the authenticated owner's GitHub access to work directly on each repository's `main`; preserve concurrent remote commits, never force-push, and use small commits. Before each push, dashboard checks are `npm test`, `npm run check`, and `npm run build`; bot checks are `npm test` and `npm run check`. Do not run migrations, create Vercel deployments, or claim browser verification unless performed.

@@ -17,6 +17,10 @@
 - [x] Audit log has actor/action/date filters, pagination, relative times, empty state. 404 and themed error pages have retry.
 - [x] UX hard requirements: dark Axex theme, pointer/hover/focus-visible on interactive controls, >=44px touch target, skeletons not spinners, inline validation, success/error toasts, empty/loading/error states on every page, 320–1440px responsive, reduced-motion support, landmarks and aria labels, WCAG AA contrast, unsaved-change form guard, route titles, 150–200ms motion, short friendly copy, no lorem ipsum or inert placeholder buttons.
 
+## Visual refinement and 3D interaction
+- [x] Replace the template-like landing treatment with a deliberate, screenshot-guided Axex art direction: strong editorial hierarchy, asymmetric composition, considered surface detail, and one distinctive 3D server-control visual, while preserving the existing brand palette and Discord sign-in path.
+- [x] Use Anime.js to animate the 3D component’s CSS transforms (`rotateX`, `rotateY`, `translateZ`) with restrained movement. Integrate through React lifecycle cleanup, respect `prefers-reduced-motion`, and keep decorative motion from hiding or delaying content or controls.
+
 ## Tests, docs, and CI
 - [x] `node:test` + PGlite tests: OAuth start/callback with mocked Discord; session sign/verify/expiry/tamper; access matrix; admin owner-only/duplicate/invalid ID/owner-not-removable; audit entry for every write; CSRF rejection; 404-not-403; bundle leak; built-handler smoke test returns 200 HTML and CSP-matching nonces.
 - [x] README architecture/local setup; commented `.env.example`; DEPLOY.md with Discord Developer Portal redirect URI, Vercel env vars, migration command, and order bot first then dashboard. GitHub Actions install/lint/typecheck/test/build.
