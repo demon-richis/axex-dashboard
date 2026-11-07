@@ -1,7 +1,8 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { ensureDashboardSchema, getDb } from "./db/client.server.ts";
-import { users } from "./db/schema.ts";
+import { userGuilds, users } from "./db/schema.ts";
 import { consumeRateLimit } from "./rate-limit.server.ts";
 import { consumeOAuthState, createOAuthState, createSessionCookie } from "./session.server.ts";
 
@@ -10,6 +11,14 @@ const discordUserSchema = z.object({
   username: z.string().min(1).max(100),
   global_name: z.string().max(100).nullable().optional(),
   avatar: z.string().max(128).nullable().optional(),
+});
+
+const discordGuildSchema = z.object({
+  id: z.string().regex(/^\d{17,20}$/),
+  name: z.string().min(1).max(100),
+  icon: z.string().max(128).nullable().optional(),
+  owner: z.boolean().optional().default(false),
+  permissions: z.string().regex(/^\d+$/).optional().default("0"),
 });
 
 function redirect(location: string, cookies?: string | string[]): Response {
@@ -24,8 +33,7 @@ function requestOrigin(request: Request): string {
 }
 
 function getClientIp(request: Request): string {
-  const trustedIp = request.headers.get("x-real-ip")?.trim();
-  return trustedIp || "unknown";
+  return request.headers.get("x-real-ip")?.trim() || "unknown";
 }
 
 export async function beginOAuth(
@@ -38,6 +46,7 @@ export async function beginOAuth(
   const redirectUri = process.env["DISCORD_REDIRECT_URI"];
   if (!clientId || !redirectUri)
     return new Response("Discord sign-in is not configured", { status: 503 });
+
   try {
     await ensureDashboardSchema();
     const limit = await limitFn(`oauth-start:${getClientIp(request)}`, 20, 60_000, now);
@@ -59,12 +68,13 @@ export async function beginOAuth(
       headers: { "Cache-Control": "no-store" },
     });
   }
+
   const state = createOAuthState(now);
   const url = new URL("https://discord.com/oauth2/authorize");
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "identify");
+  url.searchParams.set("scope", "identify guilds");
   url.searchParams.set("state", state.nonce);
   return redirect(url.toString(), state.cookie);
 }
@@ -74,6 +84,7 @@ export type OAuthDependencies = {
   now?: number;
   rateLimit?: typeof consumeRateLimit;
   saveUser?: (profile: z.infer<typeof discordUserSchema>) => Promise<void>;
+  syncGuilds?: (userId: string, guilds: z.infer<typeof discordGuildSchema>[]) => Promise<void>;
 };
 
 const callbackParamsSchema = z.object({
@@ -104,6 +115,33 @@ async function saveDiscordUser(profile: z.infer<typeof discordUserSchema>): Prom
     });
 }
 
+async function syncDiscordGuilds(
+  userId: string,
+  guilds: z.infer<typeof discordGuildSchema>[],
+): Promise<void> {
+  await ensureDashboardSchema();
+  const db = getDb();
+  const manageable = guilds.filter((guild) => {
+    const permissions = BigInt(guild.permissions);
+    return guild.owner || (permissions & 0x20n) === 0x20n || (permissions & 0x8n) === 0x8n;
+  });
+
+  await db.delete(userGuilds).where(eq(userGuilds.userId, userId));
+  if (!manageable.length) return;
+
+  await db.insert(userGuilds).values(
+    manageable.map((guild) => ({
+      userId,
+      guildId: guild.id,
+      name: guild.name,
+      icon: guild.icon ?? null,
+      owner: guild.owner ? 1 : 0,
+      permissions: guild.permissions,
+      refreshedAt: new Date(),
+    })),
+  );
+}
+
 export async function completeOAuth(
   request: Request,
   dependencies: OAuthDependencies = {},
@@ -120,10 +158,12 @@ export async function completeOAuth(
   const nonce = params.success ? params.data.state : "";
   const state = nonce ? consumeOAuthState(request, nonce, now) : null;
   const home = new URL("/", requestOrigin(request));
+
   if (!code || code.length > 2048 || !state) {
     home.searchParams.set("error", "state");
     return redirect(home.toString(), state?.clearCookie);
   }
+
   try {
     await ensureDashboardSchema();
     const limit = await limitFn(`oauth-callback:${getClientIp(request)}`, 20, 60_000, now);
@@ -164,16 +204,27 @@ export async function completeOAuth(
       }),
     });
     if (!tokenResponse.ok) throw new Error("Discord token exchange failed");
+
     const tokenJson = z
       .object({ access_token: z.string().min(1).max(4096) })
       .parse(await tokenResponse.json());
     accessToken = tokenJson.access_token;
+
     const profileResponse = await fetcher("https://discord.com/api/users/@me", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!profileResponse.ok) throw new Error("Discord profile request failed");
     const profile = discordUserSchema.parse(await profileResponse.json());
+
+    const guildsResponse = await fetcher("https://discord.com/api/users/@me/guilds", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!guildsResponse.ok) throw new Error("Discord guild list request failed");
+    const guilds = z.array(discordGuildSchema).parse(await guildsResponse.json());
+
     await (dependencies.saveUser ?? saveDiscordUser)(profile);
+    await (dependencies.syncGuilds ?? syncDiscordGuilds)(profile.id, guilds);
+
     home.searchParams.set("signedIn", "1");
     return redirect(home.toString(), [state.clearCookie, createSessionCookie(profile.id, now)]);
   } catch (error) {
