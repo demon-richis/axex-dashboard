@@ -21,6 +21,25 @@ const discordGuildSchema = z.object({
   permissions: z.string().regex(/^\d+$/).optional().default("0"),
 });
 
+function parseDiscordPayload<T>(
+  context: string,
+  schema: z.ZodType<T>,
+  payload: unknown,
+): T {
+  const result = schema.safeParse(payload);
+  if (!result.success) {
+    console.error(
+      `[auth] Discord ${context} response validation failed:`,
+      result.error.issues.map((issue) => ({
+        code: issue.code,
+        path: issue.path.map(String).join("."),
+      })),
+    );
+    throw new Error(`Discord ${context} response validation failed`);
+  }
+  return result.data;
+}
+
 function redirect(location: string, cookies?: string | string[]): Response {
   const headers = new Headers({ Location: location, "Cache-Control": "no-store" });
   for (const value of cookies ? (Array.isArray(cookies) ? cookies : [cookies]) : []) {
@@ -230,12 +249,14 @@ export async function completeOAuth(
       throw new Error("Discord token exchange failed");
     }
 
-    const tokenJson = z
-      .object({
+    const tokenJson = parseDiscordPayload(
+      "token",
+      z.object({
         access_token: z.string().min(1).max(4096),
         scope: z.string().optional(),
-      })
-      .parse(await tokenResponse.json());
+      }),
+      await tokenResponse.json(),
+    );
 
     if (tokenJson.scope && !tokenJson.scope.split(" ").includes("guilds")) {
       home.searchParams.set("error", "permissions");
@@ -252,7 +273,11 @@ export async function completeOAuth(
       throw new Error("Discord profile request failed");
     }
 
-    const profile = discordUserSchema.parse(await profileResponse.json());
+    const profile = parseDiscordPayload(
+      "profile",
+      discordUserSchema,
+      await profileResponse.json(),
+    );
     const guildsResponse = await fetcher("https://discord.com/api/users/@me/guilds", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -265,7 +290,11 @@ export async function completeOAuth(
       throw new Error("Discord guild list request failed");
     }
 
-    const guilds = z.array(discordGuildSchema).parse(await guildsResponse.json());
+    const guilds = parseDiscordPayload(
+      "guild list",
+      z.array(discordGuildSchema),
+      await guildsResponse.json(),
+    );
     await (dependencies.saveUser ?? saveDiscordUser)(profile);
     await (dependencies.syncGuilds ?? syncDiscordGuilds)(profile.id, guilds);
 
