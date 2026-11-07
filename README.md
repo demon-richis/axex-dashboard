@@ -15,7 +15,7 @@ Each page/action needing a guild calls `getGuildAccess` against the database for
 ## Local setup
 
 1. Use Node.js 22 or newer and npm.
-2. Copy `.env.example` to `.env` and fill in a Neon `DATABASE_URL`, a randomly generated `SESSION_SECRET` of at least 32 characters, the Discord OAuth client ID/secret, `DISCORD_REDIRECT_URI`, `BOT_INVITE_URL`, and `PUBLIC_URL`. Do not put a Discord bot token in this project.
+2. Copy `.env.example` to `.env` and fill in a Neon `DATABASE_URL`, a randomly generated `SESSION_SECRET` of at least 32 characters, the Discord OAuth client ID/secret, `DISCORD_REDIRECT_URI`, `BOT_INVITE_URL`, and `PUBLIC_URL`. Do not put a Discord bot token in this project. In local Vite `dev` mode, the allowlisted private settings are loaded server-side; do not prefix them with `VITE_`.
 3. In the Discord Developer Portal, register the callback URL exactly as `DISCORD_REDIRECT_URI` and enable the OAuth2 identify scope.
 4. Install and start the app:
 
@@ -24,7 +24,7 @@ Each page/action needing a guild calls `getGuildAccess` against the database for
    npm run dev
    ```
 
-5. Apply migrations only after reviewing the target database and the generated SQL:
+5. For a working sign-in, use a test Neon branch, review the target URL and migration SQL, and apply the migration only to that intended database:
 
    ```sh
    npm run db:generate

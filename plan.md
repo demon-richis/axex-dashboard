@@ -34,11 +34,15 @@ The five-product benchmark is saved at `research/bot-dashboard-benchmark.md`. Ca
 - **Audit log:** retain actor/action/date filters and pagination, offer convenient date-range shortcuts, and render role/add/remove events in plain language from their saved details. Keep actor and target IDs available, and show known dashboard usernames only when the existing users table has them.
 - **Data and trust constraints:** use only existing dashboard records and read-only queries; any guild-specific loader still calls `getGuildAccess` on every request. Do not add migrations, Bot API scopes, bot tokens, feature modules, permission escalation, or fake data. Preserve empty, loading, denied, stale, and error explanations, visible keyboard focus, semantic labels, reduced-motion support, and the existing Axex palette.
 
+## Local development environment handling
+
+For Vite `serve` mode only, load `.env`/mode-specific values with Vite's `loadEnv` and copy only the allowlisted server variables into `process.env` when a shell-provided value is absent. Keep these values out of the client `import.meta.env` surface and do not load them during production builds. Deployed runtimes continue to use their platform-provided environment variables; the local `.env` does not replace required secrets or the unapplied database migration.
+
 ## Project structure
 
 - `src/routes/`: landing, server picker, guild shell and admin/audit pages, plus API endpoints.
 - `src/components/`: reusable dashboard shell and the landing-page 3D server instrument.
-- `src/lib/`: request security, OAuth/session, DB schema/client, access checks, rate-limits, and domain data operations.
+- `src/lib/`: request security, OAuth/session, DB schema/client, access checks, rate-limits, domain data operations, and the private-env allowlist helper used only by Vite configuration.
 - `drizzle/`: schema-scoped SQL migrations and Drizzle metadata, isolated under `dashboard_meta`.
 - `research/`: source-grounded competitor benchmark with official URLs and explicit login-gating/evidence limits.
 - `test/`: `node:test` unit/integration tests using PGlite and mocked Discord HTTP.
