@@ -1,7 +1,7 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 
 import { getDb, type DashboardDb } from "./db/client.server.ts";
-import { botGuilds, guildAdmins } from "./db/schema.ts";
+import { botGuilds, guildAdmins, userGuilds } from "./db/schema.ts";
 
 export type GuildRole = "owner" | "admin" | "viewer";
 export type GuildAccess = { guildId: string; role: GuildRole };
@@ -12,18 +12,38 @@ export async function getGuildAccess(
   db: DashboardDb = getDb(),
 ): Promise<GuildAccess | null> {
   const [guild] = await db
-    .select({ ownerId: botGuilds.ownerId })
+    .select({
+      ownerId: botGuilds.ownerId,
+      discordOwner: userGuilds.owner,
+      adminRole: guildAdmins.role,
+    })
     .from(botGuilds)
-    .where(and(eq(botGuilds.guildId, guildId), isNull(botGuilds.removedAt)))
+    .leftJoin(
+      userGuilds,
+      and(eq(userGuilds.guildId, guildId), eq(userGuilds.userId, userId)),
+    )
+    .leftJoin(
+      guildAdmins,
+      and(eq(guildAdmins.guildId, guildId), eq(guildAdmins.userId, userId)),
+    )
+    .where(
+      and(
+        eq(botGuilds.guildId, guildId),
+        isNull(botGuilds.removedAt),
+        or(
+          eq(botGuilds.ownerId, userId),
+          eq(userGuilds.userId, userId),
+          eq(guildAdmins.userId, userId),
+        ),
+      ),
+    )
     .limit(1);
+
   if (!guild) return null;
-  if (guild.ownerId === userId) return { guildId, role: "owner" };
-  const [admin] = await db
-    .select({ role: guildAdmins.role })
-    .from(guildAdmins)
-    .where(and(eq(guildAdmins.guildId, guildId), eq(guildAdmins.userId, userId)))
-    .limit(1);
-  if (admin?.role === "admin" || admin?.role === "viewer") return { guildId, role: admin.role };
+  if (guild.ownerId === userId || guild.discordOwner === 1) return { guildId, role: "owner" };
+  if (guild.adminRole === "admin" || guild.adminRole === "viewer")
+    return { guildId, role: guild.adminRole };
+  if (guild.discordOwner === 0) return { guildId, role: "admin" };
   return null;
 }
 
