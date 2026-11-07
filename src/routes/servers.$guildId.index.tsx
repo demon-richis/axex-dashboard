@@ -12,7 +12,7 @@ const loadOverview = createServerFn({ method: "GET" })
       { getRequest },
       { requireUser },
       { requireGuildAccess },
-      { getGuildDetails, getVerificationStats },
+      { getGuildDetails, getVerificationStats, getVerificationTrend },
       { listAudit },
     ] = await Promise.all([
       import("@tanstack/react-start/server"),
@@ -25,8 +25,9 @@ const loadOverview = createServerFn({ method: "GET" })
     const access = await requireGuildAccess(user.userId, data.guildId);
     const guild = await getGuildDetails(data.guildId);
     if (!guild) throw new Response("Not found", { status: 404 });
-    const [stats, activityRows] = await Promise.all([
+    const [stats, trend, activityRows] = await Promise.all([
       getVerificationStats(data.guildId),
+      getVerificationTrend(data.guildId),
       listAudit({ guildId: data.guildId, page: 1, pageSize: 5 }),
     ]);
     return {
@@ -39,6 +40,7 @@ const loadOverview = createServerFn({ method: "GET" })
         role: access.role,
       },
       stats,
+      trend,
       activity: activityRows.map((row) => ({
         id: row.id,
         actorId: row.actorId,
@@ -64,6 +66,6 @@ export const Route = createFileRoute("/servers/$guildId/")({
 });
 
 function OverviewPage() {
-  const { guild, stats, activity } = Route.useLoaderData();
-  return <Overview guild={guild} stats={stats} activity={activity} />;
+  const { guild, stats, trend, activity } = Route.useLoaderData();
+  return <Overview guild={guild} stats={stats} trend={trend} activity={activity} />;
 }

@@ -1,4 +1,18 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import {
+  FileClock,
+  LayoutDashboard,
+  ListChecks,
+  Menu,
+  Search,
+  Server,
+  ShieldCheck,
+  UsersRound,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+import { DashboardTour } from "./dashboard-tour";
 
 export type ShellUser = {
   userId: string;
@@ -24,61 +38,19 @@ export function useGuildShell() {
 }
 
 type IconName = "overview" | "verification" | "logs" | "admins" | "audit" | "search" | "servers";
+const navIcons: Record<IconName, LucideIcon> = {
+  overview: LayoutDashboard,
+  verification: ShieldCheck,
+  logs: ListChecks,
+  admins: UsersRound,
+  audit: FileClock,
+  search: Search,
+  servers: Server,
+};
+
 function NavIcon({ name }: { name: IconName }) {
-  const shapes: Record<IconName, React.ReactNode> = {
-    overview: (
-      <>
-        <rect x="3.5" y="3.5" width="7" height="7" rx="1" />
-        <rect x="13.5" y="3.5" width="7" height="7" rx="1" />
-        <rect x="3.5" y="13.5" width="7" height="7" rx="1" />
-        <rect x="13.5" y="13.5" width="7" height="7" rx="1" />
-      </>
-    ),
-    verification: (
-      <>
-        <path d="M12 3.2 19 6v5.2c0 4.4-2.7 7.7-7 9.6-4.3-1.9-7-5.2-7-9.6V6z" />
-        <path d="m8.5 11.7 2.2 2.2 4.8-4.8" />
-      </>
-    ),
-    logs: (
-      <>
-        <path d="M8 5h12M8 12h12M8 19h12" />
-        <circle cx="4" cy="5" r=".6" />
-        <circle cx="4" cy="12" r=".6" />
-        <circle cx="4" cy="19" r=".6" />
-      </>
-    ),
-    admins: (
-      <>
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3.5 20v-1.5a5.5 5.5 0 0 1 11 0V20zM16 5.5a3 3 0 0 1 0 5.8M17 14a4.7 4.7 0 0 1 3.5 4.5V20h-3" />
-      </>
-    ),
-    audit: (
-      <>
-        <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20z" />
-        <path d="M15 3.5v4h4M9 12h7M9 16h7" />
-      </>
-    ),
-    search: (
-      <>
-        <circle cx="10.8" cy="10.8" r="6.8" />
-        <path d="m16 16 4.5 4.5" />
-      </>
-    ),
-    servers: (
-      <>
-        <rect x="3" y="4" width="18" height="6" rx="1.5" />
-        <rect x="3" y="14" width="18" height="6" rx="1.5" />
-        <path d="M7 7h.01M7 17h.01M11 7h6M11 17h6" />
-      </>
-    ),
-  };
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      {shapes[name]}
-    </svg>
-  );
+  const Icon = navIcons[name];
+  return <Icon size={18} strokeWidth={1.75} aria-hidden="true" focusable="false" />;
 }
 
 function Avatar({ guild, size = "md" }: { guild: ShellGuild; size?: "sm" | "md" }) {
@@ -114,6 +86,8 @@ export function DashboardShell({
   const [activeResult, setActiveResult] = useState(0);
   const paletteRef = useRef<HTMLElement>(null);
   const commandInputRef = useRef<HTMLInputElement>(null);
+  const [switcherRef] = useAutoAnimate<HTMLDivElement>({ duration: 160, easing: "ease-in-out" });
+  const [commandResultsRef] = useAutoAnimate<HTMLDivElement>({ duration: 150, easing: "ease-in-out" });
   const filtered = useMemo(
     () =>
       data.servers.filter((server) =>
@@ -237,7 +211,7 @@ export function DashboardShell({
           </a>
           <div className="topbar-tools">
             <div className="switcher-wrap">
-              <details className="switcher">
+              <details className="switcher" data-tour="server-switcher">
                 <summary aria-label={`Current server: ${data.guild.name}`}>
                   <Avatar guild={data.guild} size="sm" />
                   <span className="switcher-label">{data.guild.name}</span>
@@ -245,7 +219,7 @@ export function DashboardShell({
                     ⌄
                   </span>
                 </summary>
-                <div className="switcher-popover">
+                <div ref={switcherRef} className="switcher-popover">
                   <label className="sr-only" htmlFor="server-search">
                     Search servers
                   </label>
@@ -290,7 +264,7 @@ export function DashboardShell({
               <span>Jump to</span>
               <kbd>Ctrl K</kbd>
             </button>
-            <details className="user-menu">
+            <details className="user-menu" data-tour="account-menu">
               <summary aria-label="User menu">
                 <span className="user-avatar">
                   {data.user.avatar ? (
@@ -320,7 +294,7 @@ export function DashboardShell({
               aria-controls="server-navigation"
               onClick={() => setDrawerOpen((open) => !open)}
             >
-              <span aria-hidden="true">{drawerOpen ? "×" : "☰"}</span>
+              {drawerOpen ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}
             </button>
           </div>
         </header>
@@ -332,7 +306,7 @@ export function DashboardShell({
             <span aria-hidden="true">/</span>
             <strong aria-current="page">{currentSection}</strong>
           </div>
-          <span className={`role-badge role-${data.guild.role}`}>{data.guild.role}</span>
+          <span className={`role-badge role-${data.guild.role}`} data-tour="role-badge">{data.guild.role}</span>
         </div>
         <div className="workspace page-wrap">
           <aside
@@ -364,6 +338,7 @@ export function DashboardShell({
                   className={section === "overview" ? "active" : ""}
                   href={`/servers/${data.guild.guildId}`}
                   aria-current={section === "overview" ? "page" : undefined}
+                  data-tour="overview-nav"
                 >
                   <span className="nav-icon">
                     <NavIcon name="overview" />
@@ -391,6 +366,7 @@ export function DashboardShell({
                   className={section === "admins" ? "active" : ""}
                   href={`/servers/${data.guild.guildId}/admins`}
                   aria-current={section === "admins" ? "page" : undefined}
+                  data-tour="admins-nav"
                 >
                   <span className="nav-icon">
                     <NavIcon name="admins" />
@@ -401,6 +377,7 @@ export function DashboardShell({
                   className={section === "audit" ? "active" : ""}
                   href={`/servers/${data.guild.guildId}/audit`}
                   aria-current={section === "audit" ? "page" : undefined}
+                  data-tour="audit-nav"
                 >
                   <span className="nav-icon">
                     <NavIcon name="audit" />
@@ -415,6 +392,13 @@ export function DashboardShell({
               </span>
               All servers
             </a>
+            <DashboardTour
+              guildId={data.guild.guildId}
+              userId={data.user.userId}
+              role={data.guild.role}
+              onBeforeStart={() => setDrawerOpen(true)}
+              onAfterEnd={() => setDrawerOpen(false)}
+            />
           </aside>
           {drawerOpen && (
             <button
@@ -488,6 +472,7 @@ export function DashboardShell({
                 </button>
               </div>
               <div
+                ref={commandResultsRef}
                 className="command-results"
                 id="command-results"
                 role="listbox"

@@ -1,4 +1,7 @@
 import { useRouter } from "@tanstack/react-router";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { History, RefreshCw, UsersRound } from "lucide-react";
+import { VerificationChart, type VerificationTrendPoint } from "./verification-chart";
 import type { ShellGuild } from "./dashboard-shell.tsx";
 import { describeAuditAction, isGuildOnline, relativeAge } from "../lib/dashboard-view.ts";
 
@@ -26,12 +29,16 @@ export function Overview({
   guild,
   stats,
   activity,
+  trend,
 }: {
   guild: ShellGuild;
   stats: Record<string, number> | null;
   activity: OverviewActivity[];
+  trend: VerificationTrendPoint[] | null;
 }) {
   const router = useRouter();
+  const [statsRef] = useAutoAnimate<HTMLDivElement>({ duration: 170, easing: "ease-in-out" });
+  const [activityRef] = useAutoAnimate<HTMLOListElement>({ duration: 170, easing: "ease-in-out" });
   const connected = isGuildOnline(guild.lastSeenAt);
   const totalCases = stats ? labels.reduce((sum, key) => sum + (stats[key] ?? 0), 0) : 0;
 
@@ -84,7 +91,7 @@ export function Overview({
             title="Refresh server overview"
             onClick={() => void router.invalidate()}
           >
-            <RefreshIcon />
+            <RefreshCw size={17} strokeWidth={1.7} aria-hidden="true" />
           </button>
         </div>
       </header>
@@ -102,7 +109,7 @@ export function Overview({
               <strong>{totalCases.toLocaleString()}</strong> cases
             </span>
           </div>
-          <div className="overview-stat-grid">
+          <div ref={statsRef} className="overview-stat-grid">
             {labels.map((key, index) => (
               <article className={`card overview-stat overview-stat-${key}`} key={key}>
                 <span className="overview-stat-index">0{index + 1}</span>
@@ -112,6 +119,7 @@ export function Overview({
               </article>
             ))}
           </div>
+          {trend && <VerificationChart data={trend} />}
         </section>
       )}
 
@@ -127,7 +135,7 @@ export function Overview({
             </a>
           </header>
           {activity.length > 0 ? (
-            <ol className="activity-list">
+            <ol ref={activityRef} className="activity-list">
               {activity.map((entry) => (
                 <li className="activity-item" key={entry.id}>
                   <span className="activity-avatar" aria-hidden="true">
@@ -178,7 +186,7 @@ export function Overview({
           <p className="eyebrow">YOUR WORKSPACE</p>
           <a className="card workspace-link" href={`/servers/${guild.guildId}/admins`}>
             <span className="workspace-link-icon access-icon" aria-hidden="true">
-              <PeopleIcon />
+              <UsersRound size={18} strokeWidth={1.7} aria-hidden="true" />
             </span>
             <span className="workspace-link-copy">
               <strong>Dashboard access</strong>
@@ -190,7 +198,7 @@ export function Overview({
           </a>
           <a className="card workspace-link" href={`/servers/${guild.guildId}/audit`}>
             <span className="workspace-link-icon history-icon" aria-hidden="true">
-              <HistoryIcon />
+              <History size={18} strokeWidth={1.7} aria-hidden="true" />
             </span>
             <span className="workspace-link-copy">
               <strong>Audit history</strong>
@@ -214,30 +222,3 @@ function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function RefreshIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M20 7v5h-5M4 17v-5h5" />
-      <path d="M5.8 9a7 7 0 0 1 11.7-2L20 12M4 12l2.5 5a7 7 0 0 0 11.7-2" />
-    </svg>
-  );
-}
-
-function PeopleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <circle cx="9" cy="8" r="3" />
-      <path d="M3.5 20v-1.5a5.5 5.5 0 0 1 11 0V20zM16 5.5a3 3 0 0 1 0 5.8M17 14a4.7 4.7 0 0 1 3.5 4.5V20h-3" />
-    </svg>
-  );
-}
-
-function HistoryIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M4 7h16M4 12h11M4 17h8" />
-      <circle cx="18" cy="17" r="3" />
-      <path d="M18 15.5V17l1 1" />
-    </svg>
-  );
-}
