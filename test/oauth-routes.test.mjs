@@ -17,7 +17,7 @@ function cookieFrom(setCookie) {
 
 test("OAuth start requests identity and guild access and forces re-consent", async () => {
   const response = await beginOAuth(
-    new Request("https://dashboard.example.test/api/auth/discord", {
+    new Request("https://dashboard.example.test/api/auth/discord?consent=1", {
       headers: { "x-real-ip": "192.0.2.10" },
     }),
     { now: 1_800_000_000_000, rateLimit: allowRate },
