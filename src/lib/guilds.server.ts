@@ -135,7 +135,6 @@ export async function getVerificationStats(
   }
 }
 
-
 export type VerificationTrendPoint = {
   day: string;
   label: string;
@@ -146,7 +145,9 @@ export type VerificationTrendPoint = {
   in_progress: number;
 };
 
-export async function getVerificationTrend(guildId: string): Promise<VerificationTrendPoint[] | null> {
+export async function getVerificationTrend(
+  guildId: string,
+): Promise<VerificationTrendPoint[] | null> {
   const url = process.env["DATABASE_URL"];
   if (!url) return null;
 
@@ -189,7 +190,9 @@ export async function getVerificationTrend(guildId: string): Promise<Verificatio
       const status = String(row["status"]);
       const normalized = status === "verified" || status === "success" ? "success" : status;
       if (normalized in point) {
-        point[normalized as keyof Omit<VerificationTrendPoint, "day" | "label">] = Number(row["count"]);
+        point[normalized as keyof Omit<VerificationTrendPoint, "day" | "label">] = Number(
+          row["count"],
+        );
       }
     }
 

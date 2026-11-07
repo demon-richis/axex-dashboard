@@ -239,7 +239,7 @@ function AuditPage() {
       </section>
 
       <div className="card table-card audit-card">
-                <DataTable
+        <DataTable
           rows={rows}
           columns={columns}
           rowId={(row) => String(row.id)}
