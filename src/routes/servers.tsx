@@ -153,8 +153,8 @@ function ServerPicker() {
             </span>
             <h2>Refresh your Discord access</h2>
             <p>
-              Axex now requests access to your manageable server list. Your previous sign-in did
-              not include that permission, so reconnect once and approve the Discord request.
+              Axex now requests access to your manageable server list. Your previous sign-in did not
+              include that permission, so reconnect once and approve the Discord request.
             </p>
             <div className="action-row">
               <a className="button button-primary" href="/api/auth/discord">
