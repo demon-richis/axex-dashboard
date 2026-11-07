@@ -71,11 +71,51 @@ export function VerificationChart({ data }: { data: VerificationTrendPoint[] }) 
               iconSize={7}
               wrapperStyle={{ color: "#bcb1a8", fontSize: 10 }}
             />
-            <Line type="monotone" dataKey="success" name="Successful" stroke="#84cc16" strokeWidth={2.4} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
-            <Line type="monotone" dataKey="failed" name="Failed" stroke="#f87171" strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
-            <Line type="monotone" dataKey="quarantined" name="Quarantined" stroke="#f59e0b" strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
-            <Line type="monotone" dataKey="expired" name="Expired" stroke="#a78bfa" strokeWidth={1.8} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
-            <Line type="monotone" dataKey="in_progress" name="In progress" stroke="#60a5fa" strokeWidth={1.8} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+            <Line
+              type="monotone"
+              dataKey="success"
+              name="Successful"
+              stroke="#84cc16"
+              strokeWidth={2.4}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="failed"
+              name="Failed"
+              stroke="#f87171"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="quarantined"
+              name="Quarantined"
+              stroke="#f59e0b"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="expired"
+              name="Expired"
+              stroke="#a78bfa"
+              strokeWidth={1.8}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="in_progress"
+              name="In progress"
+              stroke="#60a5fa"
+              strokeWidth={1.8}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>

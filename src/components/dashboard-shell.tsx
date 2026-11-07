@@ -86,8 +86,14 @@ export function DashboardShell({
   const [activeResult, setActiveResult] = useState(0);
   const paletteRef = useRef<HTMLElement>(null);
   const commandInputRef = useRef<HTMLInputElement>(null);
-  const [switcherRef] = useAutoAnimate<HTMLDivElement>({ duration: 160, easing: "ease-in-out" });
-  const [commandResultsRef] = useAutoAnimate<HTMLDivElement>({ duration: 150, easing: "ease-in-out" });
+  const [switcherRef] = useAutoAnimate<HTMLDivElement>({
+    duration: 160,
+    easing: "ease-in-out",
+  });
+  const [commandResultsRef] = useAutoAnimate<HTMLDivElement>({
+    duration: 150,
+    easing: "ease-in-out",
+  });
   const filtered = useMemo(
     () =>
       data.servers.filter((server) =>
@@ -294,7 +300,11 @@ export function DashboardShell({
               aria-controls="server-navigation"
               onClick={() => setDrawerOpen((open) => !open)}
             >
-              {drawerOpen ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}
+              {drawerOpen ? (
+                <X size={19} aria-hidden="true" />
+              ) : (
+                <Menu size={19} aria-hidden="true" />
+              )}
             </button>
           </div>
         </header>
@@ -306,7 +316,9 @@ export function DashboardShell({
             <span aria-hidden="true">/</span>
             <strong aria-current="page">{currentSection}</strong>
           </div>
-          <span className={`role-badge role-${data.guild.role}`} data-tour="role-badge">{data.guild.role}</span>
+          <span className={`role-badge role-${data.guild.role}`} data-tour="role-badge">
+            {data.guild.role}
+          </span>
         </div>
         <div className="workspace page-wrap">
           <aside

@@ -153,17 +153,17 @@ export async function getVerificationTrend(guildId: string): Promise<Verificatio
   try {
     const { neon } = await import("@neondatabase/serverless");
     const query = neon(url);
-    const rows = await query\`
+    const rows = await query`
       SELECT
         TO_CHAR(DATE_TRUNC('day', created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
         status,
         COUNT(*)::int AS count
       FROM public.verification_cases
-      WHERE guild_id = \${guildId}
+      WHERE guild_id = ${guildId}
         AND created_at >= NOW() - INTERVAL '7 days'
       GROUP BY day, status
       ORDER BY day
-    \`;
+    `;
 
     const points: VerificationTrendPoint[] = Array.from({ length: 7 }, (_, index) => {
       const date = new Date();

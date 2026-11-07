@@ -137,7 +137,11 @@ function AuditPage() {
       label: "Target User ID",
       accessor: (row) => row.targetId ?? "",
       cell: (row) =>
-        row.targetId ? <code className="audit-target">{row.targetId}</code> : <span className="muted">—</span>,
+        row.targetId ? (
+          <code className="audit-target">{row.targetId}</code>
+        ) : (
+          <span className="muted">—</span>
+        ),
     },
   ];
 

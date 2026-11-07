@@ -59,7 +59,8 @@ export function DataTable<TData extends RowData>({
         header: ({ column: currentColumn }) => {
           if (column.sortable === false) return column.label;
           const direction = currentColumn.getIsSorted();
-          const SortIcon = direction === "asc" ? ArrowUp : direction === "desc" ? ArrowDown : ArrowUpDown;
+          const SortIcon =
+            direction === "asc" ? ArrowUp : direction === "desc" ? ArrowDown : ArrowUpDown;
           return (
             <button
               className="table-sort-button"

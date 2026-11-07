@@ -43,7 +43,8 @@ export function DashboardTour({
         element: '[data-tour="overview-nav"]',
         popover: {
           title: "Server overview",
-          description: "Start here for the bot connection state, verification totals and recent access changes.",
+          description:
+            "Start here for the bot connection state, verification totals and recent access changes.",
           side: "right",
           align: "start",
         },
