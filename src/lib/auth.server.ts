@@ -23,8 +23,9 @@ const discordGuildSchema = z.object({
 
 function redirect(location: string, cookies?: string | string[]): Response {
   const headers = new Headers({ Location: location, "Cache-Control": "no-store" });
-  for (const value of cookies ? (Array.isArray(cookies) ? cookies : [cookies]) : [])
+  for (const value of cookies ? (Array.isArray(cookies) ? cookies : [cookies]) : []) {
     headers.append("Set-Cookie", value);
+  }
   return new Response(null, { status: 302, headers });
 }
 
@@ -44,20 +45,26 @@ export async function beginOAuth(
   const limitFn = dependencies.rateLimit ?? consumeRateLimit;
   const clientId = process.env["DISCORD_CLIENT_ID"];
   const redirectUri = process.env["DISCORD_REDIRECT_URI"];
-  if (!clientId || !redirectUri)
+
+  if (!clientId || !redirectUri) {
     return new Response("Discord sign-in is not configured", { status: 503 });
+  }
 
   try {
     await ensureDashboardSchema();
     const limit = await limitFn(`oauth-start:${getClientIp(request)}`, 20, 60_000, now);
-    if (!limit.allowed)
+    if (!limit.allowed) {
       return Response.json(
         { error: "rate_limited" },
         {
           status: 429,
-          headers: { "Retry-After": String(limit.retryAfterSeconds), "Cache-Control": "no-store" },
+          headers: {
+            "Retry-After": String(limit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
         },
       );
+    }
   } catch (error) {
     console.error(
       "[auth] OAuth start rate limiter unavailable:",
@@ -75,7 +82,9 @@ export async function beginOAuth(
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "identify guilds");
+  url.searchParams.set("prompt", "consent");
   url.searchParams.set("state", state.nonce);
+
   return redirect(url.toString(), state.cookie);
 }
 
@@ -95,6 +104,7 @@ const callbackParamsSchema = z.object({
 async function saveDiscordUser(profile: z.infer<typeof discordUserSchema>): Promise<void> {
   await ensureDashboardSchema();
   const db = getDb();
+
   await db
     .insert(users)
     .values({
@@ -123,11 +133,15 @@ async function syncDiscordGuilds(
   const db = getDb();
   const manageable = guilds.filter((guild) => {
     const permissions = BigInt(guild.permissions);
-    return guild.owner || (permissions & 0x20n) === 0x20n || (permissions & 0x8n) === 0x8n;
+    const administrator = (permissions & 0x8n) === 0x8n;
+    const manageGuild = (permissions & 0x20n) === 0x20n;
+    return guild.owner || administrator || manageGuild;
   });
 
   await db.delete(userGuilds).where(eq(userGuilds.userId, userId));
-  if (!manageable.length) return;
+  if (manageable.length === 0) {
+    return;
+  }
 
   await db.insert(userGuilds).values(
     manageable.map((guild) => ({
@@ -159,7 +173,7 @@ export async function completeOAuth(
   const state = nonce ? consumeOAuthState(request, nonce, now) : null;
   const home = new URL("/", requestOrigin(request));
 
-  if (!code || code.length > 2048 || !state) {
+  if (!code || !state) {
     home.searchParams.set("error", "state");
     return redirect(home.toString(), state?.clearCookie);
   }
@@ -167,7 +181,7 @@ export async function completeOAuth(
   try {
     await ensureDashboardSchema();
     const limit = await limitFn(`oauth-callback:${getClientIp(request)}`, 20, 60_000, now);
-    if (!limit.allowed)
+    if (!limit.allowed) {
       return Response.json(
         { error: "rate_limited" },
         {
@@ -179,6 +193,7 @@ export async function completeOAuth(
           },
         },
       );
+    }
   } catch (error) {
     console.error(
       "[auth] OAuth callback rate limiter unavailable:",
@@ -191,6 +206,7 @@ export async function completeOAuth(
   }
 
   let accessToken = "";
+
   try {
     const tokenResponse = await fetcher("https://discord.com/api/oauth2/token", {
       method: "POST",
@@ -203,32 +219,57 @@ export async function completeOAuth(
         redirect_uri: process.env["DISCORD_REDIRECT_URI"] ?? "",
       }),
     });
-    if (!tokenResponse.ok) throw new Error("Discord token exchange failed");
+
+    if (!tokenResponse.ok) {
+      throw new Error("Discord token exchange failed");
+    }
 
     const tokenJson = z
-      .object({ access_token: z.string().min(1).max(4096) })
+      .object({
+        access_token: z.string().min(1).max(4096),
+        scope: z.string().optional(),
+      })
       .parse(await tokenResponse.json());
+
+    if (tokenJson.scope && !tokenJson.scope.split(" ").includes("guilds")) {
+      home.searchParams.set("error", "permissions");
+      return redirect(home.toString(), state.clearCookie);
+    }
+
     accessToken = tokenJson.access_token;
 
     const profileResponse = await fetcher("https://discord.com/api/users/@me", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    if (!profileResponse.ok) throw new Error("Discord profile request failed");
-    const profile = discordUserSchema.parse(await profileResponse.json());
 
+    if (!profileResponse.ok) {
+      throw new Error("Discord profile request failed");
+    }
+
+    const profile = discordUserSchema.parse(await profileResponse.json());
     const guildsResponse = await fetcher("https://discord.com/api/users/@me/guilds", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    if (!guildsResponse.ok) throw new Error("Discord guild list request failed");
-    const guilds = z.array(discordGuildSchema).parse(await guildsResponse.json());
 
+    if (!guildsResponse.ok) {
+      if (guildsResponse.status === 401 || guildsResponse.status === 403) {
+        home.searchParams.set("error", "permissions");
+        return redirect(home.toString(), state.clearCookie);
+      }
+      throw new Error("Discord guild list request failed");
+    }
+
+    const guilds = z.array(discordGuildSchema).parse(await guildsResponse.json());
     await (dependencies.saveUser ?? saveDiscordUser)(profile);
     await (dependencies.syncGuilds ?? syncDiscordGuilds)(profile.id, guilds);
 
-    home.searchParams.set("signedIn", "1");
+    home.searchParams.set("connected", "1");
     return redirect(home.toString(), [state.clearCookie, createSessionCookie(profile.id, now)]);
   } catch (error) {
-    console.error("[auth] OAuth callback failed:", error instanceof Error ? error.name : "unknown");
+    console.error(
+      "[auth] OAuth callback failed:",
+      error instanceof Error ? error.name : "unknown",
+    );
     home.searchParams.set("error", "oauth");
     return redirect(home.toString(), state.clearCookie);
   } finally {
