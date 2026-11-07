@@ -57,7 +57,7 @@ const features = [
 
 function LandingPage() {
   const { signedIn, connected, error } = Route.useLoaderData();
-  const authHref = "/api/auth/discord";
+  const authHref = signedIn ? "/api/auth/discord?consent=1" : "/api/auth/discord";
   const signInLabel = signedIn ? "Reconnect Discord" : "Continue with Discord";
 
   let notice = "";
