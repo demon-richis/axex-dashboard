@@ -61,16 +61,16 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
     scripts.every((script) => script.includes(`nonce="${nonce}"`)),
     "every rendered script nonce matches CSP",
   );
-  assert.match(html, /Safer servers\./);
-  assert.match(html, /Clearer control\./);
-  assert.match(html, /id="capabilities"/);
+  assert.match(html, /Keep your server/);
+  assert.match(html, /under control\./);
+  assert.match(html, /id="features"/);
   assert.match(html, /id="how-it-works"/);
   assert.match(html, /id="security"/);
   assert.match(html, /id="top"/);
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
-  assert.match(html, /Login with Discord/);
-  assert.match(html, /never stores a bot token/);
+  assert.match(html, /Continue with Discord/);
+  assert.match(html, /No bot token in dashboard/);
   assert.doesNotMatch(html, /Your servers/);
 
   const malformedPathResponse = await fetch(`${baseUrl}/%E0%A4%A`);
