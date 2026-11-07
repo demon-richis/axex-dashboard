@@ -1,11 +1,12 @@
 import { eq } from "drizzle-orm";
-import { getDb } from "./db/client.server.ts";
+
+import { ensureDashboardSchema, getDb } from "./db/client.server.ts";
 import { users } from "./db/schema.ts";
 import { getSession } from "./session.server.ts";
 
 export async function requireUser(request: Request) {
   const session = getSession(request);
-  if (!session)
+  if (!session) {
     throw new Response(null, {
       status: 302,
       headers: {
@@ -13,6 +14,9 @@ export async function requireUser(request: Request) {
         "Cache-Control": "no-store",
       },
     });
+  }
+
+  await ensureDashboardSchema();
   const [user] = await getDb()
     .select({
       userId: users.userId,
@@ -23,10 +27,16 @@ export async function requireUser(request: Request) {
     .from(users)
     .where(eq(users.userId, session.userId))
     .limit(1);
-  if (!user)
+
+  if (!user) {
     throw new Response(null, {
       status: 302,
-      headers: { Location: "/", "Cache-Control": "no-store" },
+      headers: {
+        Location: "/",
+        "Cache-Control": "no-store",
+      },
     });
+  }
+
   return user;
 }
