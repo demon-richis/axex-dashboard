@@ -33,6 +33,7 @@
     "animejs": "4.5.0",
     "drizzle-orm": "^0.45.3",
     "framer-motion": "^13.4.4",
+    "pg": "^8.23.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.2.1",
