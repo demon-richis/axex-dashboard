@@ -9,7 +9,7 @@ import "../components/picker.css";
 import "../components/dashboard-ux.css";
 
 const loadServers = createServerFn({ method: "GET" }).handler(async () => {
-  const [{ getRequest }, { requireUser }, { listAccessibleGuilds, listUserGuilds }, { ensureDashboardSchema }] = await Promise.all([
+  const [{ getRequest }, { requireUser }, { listUserGuilds }, { ensureDashboardSchema }] = await Promise.all([
     import("@tanstack/react-start/server"),
     import("../lib/current-user.server.ts"),
     import("../lib/guilds.server.ts"),
@@ -18,10 +18,21 @@ const loadServers = createServerFn({ method: "GET" }).handler(async () => {
   const request = getRequest();
   const user = await requireUser(request);
   await ensureDashboardSchema();
-  const [servers, discordGuilds] = await Promise.all([
-    listAccessibleGuilds(user.userId),
-    listUserGuilds(user.userId),
-  ]);
+  const discordGuilds = await listUserGuilds(user.userId);
+  const servers = discordGuilds
+    .filter((guild) => Boolean(guild.installed))
+    .map((guild) => {
+      const permissions = BigInt(guild.permissions);
+      const canManage = (permissions & 0x20n) === 0x20n || (permissions & 0x8n) === 0x8n;
+      return {
+        guildId: guild.guildId,
+        name: guild.name,
+        icon: guild.icon,
+        memberCount: guild.memberCount ?? 0,
+        lastSeenAt: guild.lastSeenAt ?? new Date(),
+        role: guild.owner || canManage ? ("owner" as const) : ("admin" as const),
+      };
+    });
   const lastCookie = request.headers
     .get("cookie")
     ?.match(/(?:^|;\s*)axex_last_server=(\d{17,20})/)?.[1];
