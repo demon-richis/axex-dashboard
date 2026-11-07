@@ -1,0 +1,50 @@
+.driver-popover.axex-driver-popover {
+  width: min(340px, calc(100vw - 32px));
+  padding: 17px;
+  border: 1px solid rgba(255, 178, 30, 0.3);
+  border-radius: 13px;
+  background: #191614;
+  color: #f5eee8;
+  box-shadow: 0 24px 75px rgba(0, 0, 0, 0.62);
+  font-family: inherit;
+}
+.driver-popover.axex-driver-popover .driver-popover-title {
+  color: #fff5e8;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.driver-popover.axex-driver-popover .driver-popover-description {
+  margin-top: 7px;
+  color: #bcb1a8;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.driver-popover.axex-driver-popover .driver-popover-progress-text {
+  color: #a79b92;
+  font-size: 10px;
+}
+.driver-popover.axex-driver-popover .driver-popover-footer button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #554035;
+  border-radius: 8px;
+  background: #2a211c;
+  color: #f3e8df;
+  text-shadow: none;
+  font-size: 11px;
+  font-weight: 650;
+}
+.driver-popover.axex-driver-popover .driver-popover-footer button:hover {
+  border-color: #a75c3b;
+  background: #38251d;
+}
+.driver-popover.axex-driver-popover .driver-popover-footer .driver-popover-next-btn,
+.driver-popover.axex-driver-popover .driver-popover-footer .driver-popover-done-btn {
+  border-color: #a9472e;
+  background: #a9472e;
+  color: #fff;
+}
+.driver-popover.axex-driver-popover .driver-popover-close-btn {
+  color: #b8aaa0;
+}
