@@ -8,60 +8,60 @@ export function HeroDiorama() {
     const element = root.current;
     if (!element) return;
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reduceMotion.current = reducedMotion.matches;
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reduceMotion.current = motionPreference.matches;
     let scope: { revert: () => unknown } | undefined;
     let disposed = false;
 
     const mountMotion = async () => {
-      if (disposed || reducedMotion.matches || scope) return;
+      if (disposed || motionPreference.matches || scope) return;
       const { animate, createScope, utils } = await import("animejs");
-      if (disposed || reducedMotion.matches) return;
+      if (disposed || motionPreference.matches) return;
 
       scope = createScope({ root: element }).add(() => {
         utils.set(".hero-instrument", {
-          rotateX: "8deg",
-          rotateY: "-12deg",
+          rotateX: "5deg",
+          rotateY: "-8deg",
           translateY: "0px",
           translateZ: "0px",
         });
-        utils.set(".instrument-orbit--wide", {
+        utils.set(".diagram-orbit--wide", {
           translateX: "-50%",
           translateY: "-50%",
-          rotateZ: "-16deg",
+          rotateZ: "-18deg",
         });
-        utils.set(".instrument-orbit--thin", {
+        utils.set(".diagram-orbit--tall", {
           translateX: "-50%",
           translateY: "-50%",
-          rotateX: "58deg",
-          rotateZ: "22deg",
+          rotateZ: "20deg",
         });
+
         animate(".hero-instrument", {
-          rotateX: [8, 12],
-          rotateY: [-12, -5],
+          rotateX: [5, 8],
+          rotateY: [-8, -2],
           translateY: [0, -5],
-          translateZ: [0, 6],
-          duration: 6200,
+          translateZ: [0, 8],
+          duration: 7200,
           ease: "inOutSine",
           alternate: true,
           loop: true,
         });
-        animate(".instrument-orbit--wide", {
-          rotateZ: ["-16deg", "344deg"],
-          duration: 38000,
+        animate(".diagram-orbit--wide", {
+          rotateZ: ["-18deg", "342deg"],
+          duration: 44000,
           ease: "linear",
           loop: true,
         });
-        animate(".instrument-orbit--thin", {
-          rotateZ: ["22deg", "-338deg"],
-          duration: 46000,
+        animate(".diagram-orbit--tall", {
+          rotateZ: ["20deg", "-340deg"],
+          duration: 52000,
           ease: "linear",
           loop: true,
         });
-        animate(".instrument-marker", {
-          scale: [0.82, 1.08],
-          opacity: [0.62, 1],
-          duration: 1900,
+        animate(".signal-dot", {
+          scale: [0.72, 1.12],
+          opacity: [0.5, 1],
+          duration: 2100,
           ease: "inOutSine",
           alternate: true,
           loop: true,
@@ -71,8 +71,8 @@ export function HeroDiorama() {
 
     void mountMotion();
     const onMotionPreferenceChange = () => {
-      reduceMotion.current = reducedMotion.matches;
-      if (reducedMotion.matches) {
+      reduceMotion.current = motionPreference.matches;
+      if (motionPreference.matches) {
         element.style.setProperty("--tilt-x", "0deg");
         element.style.setProperty("--tilt-y", "0deg");
         scope?.revert();
@@ -81,11 +81,11 @@ export function HeroDiorama() {
         void mountMotion();
       }
     };
-    reducedMotion.addEventListener("change", onMotionPreferenceChange);
+    motionPreference.addEventListener("change", onMotionPreferenceChange);
 
     return () => {
       disposed = true;
-      reducedMotion.removeEventListener("change", onMotionPreferenceChange);
+      motionPreference.removeEventListener("change", onMotionPreferenceChange);
       scope?.revert();
     };
   }, []);
@@ -95,8 +95,8 @@ export function HeroDiorama() {
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = (event.clientX - bounds.left) / bounds.width - 0.5;
     const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-    event.currentTarget.style.setProperty("--tilt-x", `${(-y * 4).toFixed(2)}deg`);
-    event.currentTarget.style.setProperty("--tilt-y", `${(x * 6).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--tilt-x", `${(-y * 3.5).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty("--tilt-y", `${(x * 5).toFixed(2)}deg`);
   }
 
   function settle(event: PointerEvent<HTMLDivElement>) {
@@ -106,86 +106,87 @@ export function HeroDiorama() {
 
   return (
     <div
-      className="hero-diorama"
+      className="hero-diagram"
       ref={root}
       aria-hidden="true"
       onPointerMove={tilt}
       onPointerLeave={settle}
     >
-      <div className="diorama-grid" />
-      <svg className="diorama-engraving" viewBox="0 0 640 520" fill="none">
-        <path d="M45 276C66 119 184 40 329 62c133 20 229 100 251 208" />
-        <path d="M80 360c55 79 144 125 250 116 95-8 161-48 212-116" />
-        <path d="M84 101h92M462 419h95M507 101h55M77 419h43" />
-        <circle cx="320" cy="274" r="176" />
-        <circle cx="320" cy="274" r="220" strokeDasharray="2 8" />
+      <div className="diagram-field" />
+      <div className="diagram-orbit diagram-orbit--wide" />
+      <div className="diagram-orbit diagram-orbit--tall" />
+      <svg className="diagram-wires" viewBox="0 0 640 520" fill="none">
+        <path className="wire wire--owner" d="M95 152c54-12 75 6 122 55" />
+        <path className="wire wire--server" d="M534 179c-62-5-88 9-126 38" />
+        <path className="wire wire--audit" d="M150 392c37-44 64-57 107-72" />
+        <circle className="signal-dot signal-dot--one" cx="217" cy="207" r="4" />
+        <circle className="signal-dot signal-dot--two" cx="414" cy="218" r="4" />
+        <circle className="signal-dot signal-dot--three" cx="257" cy="320" r="4" />
       </svg>
-      <div className="instrument-orbit instrument-orbit--wide" />
-      <div className="instrument-orbit instrument-orbit--thin" />
-      <span className="instrument-marker marker-amber" />
-      <span className="instrument-marker marker-ember" />
-      <div className="diorama-readout readout-top">
-        <span className="readout-index">SYS / 01</span>
-        <span className="readout-rule" />
-        <strong>CONTROL PLANE</strong>
-        <span className="readout-status">
-          <i /> PRIVATE BY DESIGN
-        </span>
+
+      <div className="diagram-label diagram-label--top">
+        <span>ACCESS MODEL</span>
+        <b>01 — 03</b>
       </div>
+
+      <div className="flow-node flow-node--owner">
+        <span className="flow-node-index">01 / IDENTITY</span>
+        <strong>Server owner</strong>
+        <small>Discord · identify only</small>
+      </div>
+      <div className="flow-node flow-node--server">
+        <span className="flow-node-index">02 / SCOPE</span>
+        <strong>Selected server</strong>
+        <small>Access checked per request</small>
+      </div>
+      <div className="flow-node flow-node--audit">
+        <span className="flow-node-index">03 / RECORD</span>
+        <strong>Access changes</strong>
+        <small>Actor · target · time</small>
+      </div>
+
       <div className="stage-parallax">
         <div className="hero-instrument">
-          <div className="instrument-halo" />
-          <div className="instrument-shadow" />
-          <div className="server-machine">
-            <div className="machine-unit unit-back">
-              <div className="unit-top" />
-              <div className="unit-side" />
-              <div className="unit-front">
-                <span className="unit-index">AX / 03</span>
-                <span className="unit-vent" />
-                <i className="unit-light" />
-              </div>
+          <div className="core-shadow" />
+          <div className="core-plate core-plate--back" />
+          <div className="core-plate core-plate--middle">
+            <span className="middle-index">GUILD ACCESS</span>
+            <span className="middle-rule" />
+            <span className="middle-copy">OWNER RULESET</span>
+          </div>
+          <div className="core-plate core-plate--front">
+            <div className="core-heading">
+              <span className="core-mark">AX</span>
+              <span className="core-wordmark">
+                AXEX <small>CONTROL</small>
+              </span>
+              <span className="core-led" />
             </div>
-            <div className="machine-unit unit-mid">
-              <div className="unit-top" />
-              <div className="unit-side" />
-              <div className="unit-front">
-                <span className="unit-index">GUILD SYNC</span>
-                <span className="unit-vent" />
-                <i className="unit-light" />
-              </div>
+            <div className="core-separator" />
+            <div className="core-row">
+              <span>IDENTITY</span>
+              <b>DISCORD</b>
             </div>
-            <div className="machine-unit unit-frontmost">
-              <div className="unit-top" />
-              <div className="unit-side" />
-              <div className="unit-front">
-                <span className="unit-emblem">AX</span>
-                <span className="unit-label">
-                  AXEX <small>SERVER CONTROL</small>
-                </span>
-                <div className="unit-ports">
-                  <i />
-                  <i />
-                  <i />
-                  <b />
-                </div>
-                <i className="unit-light" />
-              </div>
+            <div className="core-row">
+              <span>AUTHORITY</span>
+              <b>OWNER + ROSTER</b>
             </div>
-            <div className="machine-plinth">
-              <span>OWNER-DEFINED ACCESS</span>
-              <b>●</b>
+            <div className="core-row">
+              <span>CHANGES</span>
+              <b>AUDIT LOG</b>
+            </div>
+            <div className="core-foot">
+              <span>SERVER-SCOPED</span>
+              <span className="core-foot-mark">AX / 01</span>
             </div>
           </div>
         </div>
       </div>
-      <div className="diorama-readout readout-bottom">
-        <span className="readout-index">AUTH / 02</span>
-        <strong>IDENTITY ONLY</strong>
-        <span className="readout-sub">No bot token in the dashboard</span>
+
+      <div className="diagram-label diagram-label--bottom">
+        <span>ACCESS IS OWNER-DEFINED</span>
+        <span className="diagram-led" />
       </div>
-      <span className="diorama-coordinate coordinate-left">40° 42′ 46″ N</span>
-      <span className="diorama-coordinate coordinate-right">AX—CONTROL / 001</span>
     </div>
   );
 }

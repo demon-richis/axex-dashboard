@@ -36,6 +36,13 @@
 - [x] On Audit log, retain actor/action/date filtering and pagination; add quick date ranges and readable action/detail summaries derived from saved audit fields while retaining actor and target IDs and respecting unknown actor identities.
 - [x] Keep guild data behind per-request `getGuildAccess`, use existing records/read-only queries only, preserve no-migration/no-bot-token security constraints, and maintain responsive layout, semantic labels, focus visibility, useful empty/loading/denied/stale/error states, and reduced-motion support.
 
+## D3 Public landing page redesign
+
+- [x] Replace the current sparse all-dark hero with a clearly different, professional Axex public page: warm editorial canvas, ink product surfaces, ember/gold accents, strong headline hierarchy, purposeful spacing, and a branded visual that explains the product rather than decorative filler.
+- [x] Expand the public story with working in-page navigation and concise sections for actual capabilities, how owner-defined access works, and the dashboard's security promises. Do not invent usage, uptime, live-connection, or community metrics; preserve the real Discord sign-in CTA, signed-in destination, OAuth error alerts, and metadata.
+- [x] Replace the hero's server-rack illustration with an accurate 3D access-flow schematic using the existing Anime.js dependency. Keep motion subtle, clean up animation on unmount, respect `prefers-reduced-motion`, and hide the decorative visual from assistive technology.
+- [x] Keep navigation and content responsive from 320px, keyboard usable with visible focus, semantic and labeled, high contrast, and free of dead links or placeholder controls.
+
 ## Local sign-in configuration
 
 - [x] In Vite `serve` mode, load private local `.env` values into server-side `process.env` for the allowlisted dashboard server settings (`DATABASE_URL`, `SESSION_SECRET`, Discord OAuth settings, `BOT_INVITE_URL`, and `PUBLIC_URL`). Existing shell environment values take precedence; do not expose private values to client bundles or load local values during production builds.

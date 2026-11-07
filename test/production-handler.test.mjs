@@ -61,5 +61,12 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
     scripts.every((script) => script.includes(`nonce="${nonce}"`)),
     "every rendered script nonce matches CSP",
   );
-  assert.match(html, /Your servers/);
+  assert.match(html, /Safer servers\./);
+  assert.match(html, /Clearer control\./);
+  assert.match(html, /id="capabilities"/);
+  assert.match(html, /id="how-it-works"/);
+  assert.match(html, /id="security"/);
+  assert.match(html, /Login with Discord/);
+  assert.match(html, /never stores a bot token/);
+  assert.doesNotMatch(html, /Your servers/);
 });

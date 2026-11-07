@@ -1,4 +1,4 @@
-# Axex Dashboard — D1 foundation and evidence-led UX refinement plan
+# Axex Dashboard — D1 foundation and public product UX plan
 
 ## Scope and architecture
 
@@ -10,18 +10,18 @@ The `dashboard` schema and its migration journal schema `dashboard_meta` are ind
 
 ## Design
 
-- **Design Movement:** Screenshot-guided industrial editorial design, borrowing from instrument panels and precision hardware rather than a generic SaaS landing-page kit.
-- **Core Principles:** deliberate asymmetry; a believable, tactile control-room surface; clear identity and access cues; a single confident 3D visual instead of scattered decorative cards.
-- **Color Philosophy:** preserve the existing near-black canvas and Axex ember/gold identity. Use a softer graphite field and fine low-contrast drafting lines for depth; reserve gold for the primary action and active signal, and green only for healthy state.
-- **Layout Paradigm:** keep the left-side editorial invitation but balance it with a visually anchored 3D server instrument on the right. Replace oversized blank space and floating generic widgets with a compact calibration rail, structured information bands, and intentional alignment.
-- **Signature Elements:** an exploded server-stack sculpture with visible front/side/top planes; thin orbital/measurement lines; tiny equipment-style index labels and status LEDs.
-- **Interaction Philosophy:** the 3D object reacts subtly to pointer movement and settles when focus leaves; the login path remains the most prominent action. All actual controls remain semantic, keyboard reachable, and at least 44px tall. Decorative 3D art is hidden from assistive technology.
-- **Animation:** use Anime.js v4.5.0 `createScope()` within React `useEffect()` and call `revert()` on cleanup. Animate CSS 3D `rotateX`, `rotateY`, `translateZ`, and restrained opacity/position reveals with slow, low-amplitude movement. Respect `prefers-reduced-motion` by skipping continuous motion and keeping the final still composition. No motion communicates status or gates a task. Follow the [official React integration](https://animejs.com/documentation/getting-started/using-with-react) and [CSS transform reference](https://animejs.com/documentation/animation/animatable-properties/css-transforms).
-- **Typography System:** retain Inter for readable controls and body text; use a larger, tightly tracked editorial headline and compact monospaced index labels for instrument details. Keep data IDs and counts tabular.
-- **Brand Essence:** a secure, precise control room for Axex server owners; composed, technical, trustworthy.
-- **Brand Voice:** short, direct, and quietly confident. Examples: “Your servers. One clear view.” “Only trusted access gets through.”
-- **Wordmark & Logo:** retain the custom angular AX tile and compact AXEX wordmark, but pair it with deliberate spacing and a small instrument-index label rather than a default text-only brand.
-- **Signature Brand Color:** Axex ember `#f04b2f`, with gold `#ffb21e` kept as the rare high-attention accent.
+- **Design Movement:** contemporary editorial product design with the confidence of a technical journal and the clarity of a high-end operations console.
+- **Core Principles:** decisive hierarchy; warm, human surfaces around a precise dark product diagram; truthful product claims; clear, low-friction paths to sign-in and product understanding.
+- **Color Philosophy:** move the public page away from the all-black hero into warm limestone/paper (`#f2efe9`) and deep ink (`#171816`), retaining Axex ember and gold for unmistakable emphasis. Keep green for genuine security/healthy cues only.
+- **Layout Paradigm:** asymmetrical wide editorial hero, with a clear narrative column and an isometric access-flow schematic; alternate broad, full-width story bands below instead of repeating a row of identical floating cards.
+- **Signature Elements:** angular AX stamp; a labeled 3D path from Discord identity through owner-defined access to a server; compact mono system captions paired with large readable editorial type.
+- **Interaction Philosophy:** navigation anchors reach real page sections, the Discord CTA remains obvious, and interaction supports understanding rather than spectacle. All controls remain semantic, keyboard reachable, visibly focused, and at least 44px tall.
+- **Animation:** retain Anime.js v4.5.0 `createScope()` in React `useEffect()` with `revert()` on cleanup. Give the access-flow schematic restrained CSS 3D `rotateX`, `rotateY`, and `translateZ` motion; disable pointer/continuous movement for `prefers-reduced-motion`, and never encode a real connection state in decorative animation. Follow the [official React integration](https://animejs.com/documentation/getting-started/using-with-react) and [CSS transform reference](https://animejs.com/documentation/animation/animatable-properties/css-transforms).
+- **Typography System:** Inter for body and navigation; a compact, high-contrast display scale for the hero and section headings; monospaced micro-labels only for the schematic and security annotations.
+- **Brand Essence:** owner-led Axex server control that explains who can act and what changed; capable, composed, trustworthy.
+- **Brand Voice:** direct, useful, and confident. Examples: “Know what’s connected. See who can change it.” “Access follows your rules—not your Discord roles.”
+- **Wordmark & Logo:** retain the custom angular AX tile and clear AXEX wordmark, with room around the mark and a stable nav placement.
+- **Signature Brand Color:** Axex ember `#f04b2f`, paired with gold `#ffb21e` as a restrained action/signal accent.
 
 ## Evidence-led authenticated dashboard UX (D2)
 
@@ -34,6 +34,10 @@ The five-product benchmark is saved at `research/bot-dashboard-benchmark.md`. Ca
 - **Audit log:** retain actor/action/date filters and pagination, offer convenient date-range shortcuts, and render role/add/remove events in plain language from their saved details. Keep actor and target IDs available, and show known dashboard usernames only when the existing users table has them.
 - **Data and trust constraints:** use only existing dashboard records and read-only queries; any guild-specific loader still calls `getGuildAccess` on every request. Do not add migrations, Bot API scopes, bot tokens, feature modules, permission escalation, or fake data. Preserve empty, loading, denied, stale, and error explanations, visible keyboard focus, semantic labels, reduced-motion support, and the existing Axex palette.
 
+## Public landing page redesign (D3)
+
+This deliberately replaces the previous sparse, dark, hero-only public-page composition; it does not change the authenticated dashboard's dark console theme. Build a warm editorial storefront around the real product story: top navigation with working in-page anchors and Discord sign-in; a clear headline and short value proposition; a purposeful 3D access-flow illustration; concise capability, workflow, and security sections; a final sign-in CTA; and a compact footer. Keep claims within the shipped D1 feature set—actual bot heartbeat, owner-defined admin/viewer access, audit records, identify-only OAuth, no dashboard-held bot token—and do not invent usage, uptime, or community metrics. Keep the public loader, signed-in CTA destination, error alerts, page title/description, and accessible responsive behavior intact. Rework `HeroDiorama` as an access-flow schematic while retaining its Anime.js lifecycle and reduced-motion behavior.
+
 ## Local development environment handling
 
 For Vite `serve` mode only, load `.env`/mode-specific values with Vite's `loadEnv` and copy only the allowlisted server variables into `process.env` when a shell-provided value is absent. Keep these values out of the client `import.meta.env` surface and do not load them during production builds. Deployed runtimes continue to use their platform-provided environment variables; the local `.env` does not replace required secrets or the unapplied database migration.
@@ -41,7 +45,7 @@ For Vite `serve` mode only, load `.env`/mode-specific values with Vite's `loadEn
 ## Project structure
 
 - `src/routes/`: landing, server picker, guild shell and admin/audit pages, plus API endpoints.
-- `src/components/`: reusable dashboard shell and the landing-page 3D server instrument.
+- `src/components/`: reusable dashboard shell and the landing-page 3D access-flow schematic.
 - `src/lib/`: request security, OAuth/session, DB schema/client, access checks, rate-limits, domain data operations, and the private-env allowlist helper used only by Vite configuration.
 - `drizzle/`: schema-scoped SQL migrations and Drizzle metadata, isolated under `dashboard_meta`.
 - `research/`: source-grounded competitor benchmark with official URLs and explicit login-gating/evidence limits.
