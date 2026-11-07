@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { LoadingSkeleton } from "../components/loading-skeleton";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+
+import { LoadingSkeleton } from "../components/loading-skeleton";
 import { isGuildOnline, relativeAge } from "../lib/dashboard-view.ts";
 import "../components/dashboard.css";
 import "../components/pages.css";
@@ -9,38 +10,36 @@ import "../components/picker.css";
 import "../components/dashboard-ux.css";
 
 const loadServers = createServerFn({ method: "GET" }).handler(async () => {
-  const [{ getRequest }, { requireUser }, { listUserGuilds }, { ensureDashboardSchema }] = await Promise.all([
+  const [{ getRequest }, { requireUser }, { listUserGuilds }] = await Promise.all([
     import("@tanstack/react-start/server"),
     import("../lib/current-user.server.ts"),
     import("../lib/guilds.server.ts"),
-    import("../lib/db/client.server.ts"),
   ]);
   const request = getRequest();
   const user = await requireUser(request);
-  await ensureDashboardSchema();
   const discordGuilds = await listUserGuilds(user.userId);
+
   const servers = discordGuilds
     .filter((guild) => Boolean(guild.installed))
-    .map((guild) => {
-      const permissions = BigInt(guild.permissions);
-      const canManage = (permissions & 0x20n) === 0x20n || (permissions & 0x8n) === 0x8n;
-      return {
-        guildId: guild.guildId,
-        name: guild.name,
-        icon: guild.icon,
-        memberCount: guild.memberCount ?? 0,
-        lastSeenAt: guild.lastSeenAt ?? new Date(),
-        role: guild.owner || canManage ? ("owner" as const) : ("admin" as const),
-      };
-    });
+    .map((guild) => ({
+      guildId: guild.guildId,
+      name: guild.name,
+      icon: guild.icon,
+      memberCount: guild.memberCount ?? 0,
+      lastSeenAt: guild.lastSeenAt ?? new Date(0),
+      role: guild.owner === 1 ? ("owner" as const) : ("admin" as const),
+    }));
+
   const lastCookie = request.headers
     .get("cookie")
     ?.match(/(?:^|;\s*)axex_last_server=(\d{17,20})/)?.[1];
   const lastServer = servers.find((server) => server.guildId === lastCookie) ?? null;
+
   return {
     user,
     servers,
     availableGuilds: discordGuilds.filter((guild) => !guild.installed),
+    needsReconnect: discordGuilds.length === 0,
     lastServer,
     inviteUrl: process.env["BOT_INVITE_URL"] ?? "https://discord.com/oauth2/authorize",
   };
@@ -52,10 +51,11 @@ export const Route = createFileRoute("/servers")({
   pendingComponent: () => <LoadingSkeleton variant="picker" />,
   loader: () => loadServers(),
   head: () => ({ meta: [{ title: "Your servers · Axex Dashboard" }] }),
+  errorComponent: ServerPickerError,
   component: ServerPicker,
 });
 
-function inviteForGuild(base: string, guildId: string) {
+function inviteForGuild(base: string, guildId: string): string {
   try {
     const url = new URL(base);
     url.searchParams.set("guild_id", guildId);
@@ -67,25 +67,29 @@ function inviteForGuild(base: string, guildId: string) {
 }
 
 function ServerPicker() {
-  const { user, servers, availableGuilds, lastServer, inviteUrl } = Route.useLoaderData();
+  const { user, servers, availableGuilds, needsReconnect, lastServer, inviteUrl } =
+    Route.useLoaderData();
   const [query, setQuery] = useState("");
+
   const filteredServers = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) return servers;
     return servers.filter((server) => server.name.toLocaleLowerCase().includes(normalized));
   }, [query, servers]);
+
   const filteredAvailable = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (!normalized) return availableGuilds;
     return availableGuilds.filter((server) => server.name.toLocaleLowerCase().includes(normalized));
-  }, [query, availableGuilds]);
+  }, [availableGuilds, query]);
+
   const onlineCount = servers.filter((server) => isGuildOnline(server.lastSeenAt)).length;
 
-  function remember(guildId: string) {
+  function remember(guildId: string): void {
     document.cookie = `axex_last_server=${guildId}; Max-Age=2592000; Path=/; Secure; SameSite=Lax`;
   }
 
-  async function signOut() {
+  async function signOut(): Promise<void> {
     await fetch("/api/auth/logout", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -100,23 +104,39 @@ function ServerPicker() {
       <header className="picker-header">
         <a className="brand" href="/servers" aria-label="Axex Dashboard home">
           <span className="brand-mark">AX</span>
-          <span className="wordmark">AXEX <span className="brand-divider">/</span> DASHBOARD</span>
+          <span className="wordmark">
+            AXEX <span className="brand-divider">/</span> DASHBOARD
+          </span>
         </a>
+
         <div className="picker-account">
           <span className="picker-user">{user.globalName ?? user.username}</span>
-          <button className="picker-signout" type="button" onClick={() => void signOut()}>Sign out</button>
+          <a className="picker-reconnect" href="/api/auth/discord">
+            Reconnect Discord
+          </a>
+          <button className="picker-signout" type="button" onClick={() => void signOut()}>
+            Sign out
+          </button>
         </div>
       </header>
 
       <div className="picker-content">
         <div className="picker-intro">
           <div>
-            <p className="eyebrow">SERVER ACCESS <span className="title-divider">/</span> AXEX</p>
+            <p className="eyebrow">
+              SERVER ACCESS <span className="title-divider">/</span> AXEX
+            </p>
             <h1>Your servers</h1>
-            <p className="muted">Choose a server to manage, or add Axex where it is not installed yet.</p>
+            <p className="muted">
+              Choose a server to manage, or add Axex where it is not installed yet.
+            </p>
           </div>
+
           {servers.length > 0 && (
-            <div className="picker-live-summary" aria-label={`${servers.length} connected servers, ${onlineCount} online`}>
+            <div
+              className="picker-live-summary"
+              aria-label={`${servers.length} connected servers, ${onlineCount} online`}
+            >
               <span className="picker-summary-value">{servers.length}</span>
               <span>connected</span>
               <span className="picker-summary-divider" aria-hidden="true" />
@@ -126,10 +146,33 @@ function ServerPicker() {
           )}
         </div>
 
-        {(servers.length > 0 || availableGuilds.length > 0) && (
+        {needsReconnect && (
+          <section className="card empty-state picker-empty" role="status">
+            <span className="brand-mark" aria-hidden="true">
+              AX
+            </span>
+            <h2>Refresh your Discord access</h2>
+            <p>
+              Axex now requests access to your manageable server list. Your previous sign-in did
+              not include that permission, so reconnect once and approve the Discord request.
+            </p>
+            <div className="action-row">
+              <a className="button button-primary" href="/api/auth/discord">
+                Reconnect Discord ↗
+              </a>
+              <button className="button button-secondary" onClick={() => window.location.reload()}>
+                Refresh
+              </button>
+            </div>
+          </section>
+        )}
+
+        {!needsReconnect && (servers.length > 0 || availableGuilds.length > 0) && (
           <div className="picker-controls">
             <label className="picker-search">
-              <span className="picker-search-icon" aria-hidden="true"><SearchIcon /></span>
+              <span className="picker-search-icon" aria-hidden="true">
+                <SearchIcon />
+              </span>
               <span className="sr-only">Search servers</span>
               <input
                 type="search"
@@ -138,39 +181,69 @@ function ServerPicker() {
                 placeholder="Search your servers"
                 autoComplete="off"
               />
-              {query && <button className="picker-clear" type="button" onClick={() => setQuery("")}>Clear</button>}
+              {query && (
+                <button className="picker-clear" type="button" onClick={() => setQuery("")}>
+                  Clear
+                </button>
+              )}
             </label>
-            <span className="picker-results">{filteredServers.length + filteredAvailable.length} servers</span>
+            <span className="picker-results">
+              {filteredServers.length + filteredAvailable.length} servers
+            </span>
           </div>
         )}
 
         {lastServer && servers.length > 1 && (
-          <a className="continue-server card" href={`/servers/${lastServer.guildId}`} onClick={() => remember(lastServer.guildId)}>
+          <a
+            className="continue-server card"
+            href={`/servers/${lastServer.guildId}`}
+            onClick={() => remember(lastServer.guildId)}
+          >
             <ServerIcon server={lastServer} />
             <span className="continue-copy">
               <span className="eyebrow">CONTINUE WHERE YOU LEFT OFF</span>
               <strong>{lastServer.name}</strong>
             </span>
-            <span className="continue-arrow" aria-hidden="true">↗</span>
+            <span className="continue-arrow" aria-hidden="true">
+              ↗
+            </span>
           </a>
         )}
 
         {filteredServers.length > 0 && (
           <section className="picker-group">
             <div className="picker-group-head">
-              <div><span className="eyebrow">CONNECTED</span><h2>Manage your servers</h2></div>
+              <div>
+                <span className="eyebrow">CONNECTED</span>
+                <h2>Manage your servers</h2>
+              </div>
               <span>{filteredServers.length}</span>
             </div>
+
             <div className="server-grid">
               {filteredServers.map((server) => {
                 const online = isGuildOnline(server.lastSeenAt);
                 return (
-                  <a key={server.guildId} className="card server-card server-card-enhanced" href={`/servers/${server.guildId}`} onClick={() => remember(server.guildId)}>
+                  <a
+                    key={server.guildId}
+                    className="card server-card server-card-enhanced"
+                    href={`/servers/${server.guildId}`}
+                    onClick={() => remember(server.guildId)}
+                  >
                     <ServerIcon server={server} />
-                    <div className="server-card-info"><strong>{server.name}</strong><span>{server.memberCount.toLocaleString()} members</span></div>
+                    <div className="server-card-info">
+                      <strong>{server.name}</strong>
+                      <span>{server.memberCount.toLocaleString()} members</span>
+                    </div>
                     <span className={`role-badge role-${server.role}`}>{server.role}</span>
-                    <span className={`server-health ${online ? "online" : "offline"}`}><i aria-hidden="true" /><span>{online ? "Connected" : "Offline"}</span><span className="server-last-seen">· {relativeAge(server.lastSeenAt)}</span></span>
-                    <span className="server-open" aria-hidden="true">↗</span>
+                    <span className={`server-health ${online ? "online" : "offline"}`}>
+                      <i aria-hidden="true" />
+                      <span>{online ? "Connected" : "Offline"}</span>
+                      <span className="server-last-seen">· {relativeAge(server.lastSeenAt)}</span>
+                    </span>
+                    <span className="server-open" aria-hidden="true">
+                      ↗
+                    </span>
                   </a>
                 );
               })}
@@ -181,16 +254,30 @@ function ServerPicker() {
         {filteredAvailable.length > 0 && (
           <section className="picker-group picker-group-available">
             <div className="picker-group-head">
-              <div><span className="eyebrow">AVAILABLE</span><h2>Add Axex to a server</h2></div>
+              <div>
+                <span className="eyebrow">AVAILABLE</span>
+                <h2>Add Axex to a server</h2>
+              </div>
               <span>{filteredAvailable.length}</span>
             </div>
+
             <div className="server-grid">
               {filteredAvailable.map((server) => (
                 <article key={server.guildId} className="card server-card server-card-available">
                   <ServerIcon server={server} />
-                  <div className="server-card-info"><strong>{server.name}</strong><span>You can manage this server</span></div>
-                  <span className="role-badge role-owner">{server.owner ? "owner" : "manager"}</span>
-                  <a className="server-add-button" href={inviteForGuild(inviteUrl, server.guildId)} target="_blank" rel="noreferrer">
+                  <div className="server-card-info">
+                    <strong>{server.name}</strong>
+                    <span>You can manage this server</span>
+                  </div>
+                  <span className="role-badge role-owner">
+                    {server.owner ? "owner" : "manager"}
+                  </span>
+                  <a
+                    className="server-add-button"
+                    href={inviteForGuild(inviteUrl, server.guildId)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Add Axex ↗
                   </a>
                 </article>
@@ -199,17 +286,28 @@ function ServerPicker() {
           </section>
         )}
 
-        {servers.length === 0 && availableGuilds.length === 0 && (
+        {!needsReconnect && servers.length === 0 && availableGuilds.length === 0 && (
           <section className="card empty-state picker-empty">
-            <span className="brand-mark" aria-hidden="true">AX</span>
+            <span className="brand-mark" aria-hidden="true">
+              AX
+            </span>
             <h2>No manageable servers found</h2>
             <p>
-              Discord did not return any servers where your account has enough management access.
-              If you just added Axex, sign out and sign in again to refresh your server access.
+              Discord did not return any servers where your account has management access. Check
+              that your account owns the server or has Manage Server / Administrator permission.
             </p>
             <div className="action-row">
-              <a className="button button-primary" href={inviteUrl} target="_blank" rel="noreferrer">Add Axex to a server ↗</a>
-              <button className="button button-secondary" onClick={() => window.location.reload()}>Refresh</button>
+              <a
+                className="button button-primary"
+                href={inviteUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Add Axex to a server ↗
+              </a>
+              <button className="button button-secondary" onClick={() => window.location.reload()}>
+                Refresh
+              </button>
             </div>
           </section>
         )}
@@ -218,10 +316,50 @@ function ServerPicker() {
   );
 }
 
-function ServerIcon({ server }: { server: { guildId: string; icon: string | null; name: string } }) {
-  return server.icon ? (
-    <img className="server-avatar server-picker-avatar" src={`https://cdn.discordapp.com/icons/${server.guildId}/${server.icon}.png?size=128`} alt="" />
-  ) : (
+function ServerPickerError() {
+  return (
+    <main className="picker-page">
+      <section className="card empty-state picker-empty">
+        <span className="brand-mark" aria-hidden="true">
+          AX
+        </span>
+        <h1>We could not load your servers</h1>
+        <p>
+          The dashboard could not read your server list. Reconnect Discord to refresh access, or
+          retry the request.
+        </p>
+        <div className="action-row">
+          <a className="button button-primary" href="/api/auth/discord">
+            Reconnect Discord ↗
+          </a>
+          <button className="button button-secondary" onClick={() => window.location.reload()}>
+            Try again
+          </button>
+          <a className="button button-secondary" href="/">
+            Go home
+          </a>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function ServerIcon({
+  server,
+}: {
+  server: { guildId: string; icon: string | null; name: string };
+}) {
+  if (server.icon) {
+    return (
+      <img
+        className="server-avatar server-picker-avatar"
+        src={`https://cdn.discordapp.com/icons/${server.guildId}/${server.icon}.png?size=128`}
+        alt=""
+      />
+    );
+  }
+
+  return (
     <span className="server-avatar server-picker-avatar server-avatar-fallback" aria-hidden="true">
       {server.name.slice(0, 1).toUpperCase()}
     </span>
