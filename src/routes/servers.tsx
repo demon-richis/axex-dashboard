@@ -111,7 +111,7 @@ function ServerPicker() {
 
         <div className="picker-account">
           <span className="picker-user">{user.globalName ?? user.username}</span>
-          <a className="picker-reconnect" href="/api/auth/discord">
+          <a className="picker-reconnect" href="/api/auth/discord?consent=1">
             Reconnect Discord
           </a>
           <button className="picker-signout" type="button" onClick={() => void signOut()}>
@@ -157,7 +157,7 @@ function ServerPicker() {
               include that permission, so reconnect once and approve the Discord request.
             </p>
             <div className="action-row">
-              <a className="button button-primary" href="/api/auth/discord">
+              <a className="button button-primary" href="/api/auth/discord?consent=1">
                 Reconnect Discord ↗
               </a>
               <button className="button button-secondary" onClick={() => window.location.reload()}>
@@ -329,7 +329,7 @@ function ServerPickerError() {
           retry the request.
         </p>
         <div className="action-row">
-          <a className="button button-primary" href="/api/auth/discord">
+          <a className="button button-primary" href="/api/auth/discord?consent=1">
             Reconnect Discord ↗
           </a>
           <button className="button button-secondary" onClick={() => window.location.reload()}>
