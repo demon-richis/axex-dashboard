@@ -148,10 +148,11 @@ test("OAuth callback explains when Discord has not granted guild scope", async (
     {
       now,
       rateLimit: allowRate,
-      fetcher: async () => Response.json({
-        access_token: "single-use-token",
-        scope: "identify",
-      }),
+      fetcher: async () =>
+        Response.json({
+          access_token: "single-use-token",
+          scope: "identify",
+        }),
     },
   );
 
