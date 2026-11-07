@@ -38,7 +38,12 @@ function requestUrl(request) {
 }
 
 function safeStaticPath(urlPath) {
-  const decoded = decodeURIComponent(urlPath.split("?")[0] || "/");
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath.split("?")[0] || "/");
+  } catch {
+    return null;
+  }
   const candidate = resolve(clientRoot, `.${decoded}`);
   return candidate === clientRoot || candidate.startsWith(`${clientRoot}/`) ? candidate : null;
 }

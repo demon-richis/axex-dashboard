@@ -45,7 +45,7 @@ function LandingPage() {
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <header className="landing-header">
+      <header className="landing-header" id="top">
         <a className="brand" href="/" aria-label="Axex Dashboard home">
           <span className="brand-mark" aria-hidden="true">
             AX
@@ -359,7 +359,7 @@ function LandingPage() {
           </span>
         </a>
         <span className="footer-note">Built for the people who keep communities safe.</span>
-        <a className="footer-top" href="#main-content">
+        <a className="footer-top" href="#top">
           Back to top ↑
         </a>
       </footer>

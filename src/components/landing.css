@@ -15,7 +15,7 @@
   isolation: isolate;
   min-height: 100svh;
   padding: 0 var(--page-pad);
-  overflow: hidden;
+  overflow-x: clip;
   background:
     radial-gradient(ellipse at 82% 14%, rgba(204, 111, 66, 0.09), transparent 31%), var(--paper);
   color: var(--ink);
@@ -61,7 +61,8 @@
   transform: translateY(0);
 }
 .landing-header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 10;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -70,6 +71,8 @@
   min-height: 82px;
   margin: 0 auto;
   border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(14px);
 }
 .landing-header::after {
   position: absolute;
@@ -736,6 +739,12 @@
 .section-shell {
   width: min(100%, 1280px);
   margin: 0 auto;
+}
+.capabilities-section,
+.workflow-section,
+.security-section,
+.closing-section {
+  scroll-margin-top: 96px;
 }
 .capabilities-section {
   margin: 72px calc(var(--page-pad) * -1) 0;
