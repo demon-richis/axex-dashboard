@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { LoadingSkeleton } from "../components/loading-skeleton";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { isGuildOnline, relativeAge } from "../lib/dashboard-view.ts";
 import "../components/dashboard.css";
@@ -9,13 +9,15 @@ import "../components/picker.css";
 import "../components/dashboard-ux.css";
 
 const loadServers = createServerFn({ method: "GET" }).handler(async () => {
-  const [{ getRequest }, { requireUser }, { listAccessibleGuilds, listUserGuilds }] = await Promise.all([
+  const [{ getRequest }, { requireUser }, { listAccessibleGuilds, listUserGuilds }, { ensureDashboardSchema }] = await Promise.all([
     import("@tanstack/react-start/server"),
     import("../lib/current-user.server.ts"),
     import("../lib/guilds.server.ts"),
+    import("../lib/db/client.server.ts"),
   ]);
   const request = getRequest();
   const user = await requireUser(request);
+  await ensureDashboardSchema();
   const [servers, discordGuilds] = await Promise.all([
     listAccessibleGuilds(user.userId),
     listUserGuilds(user.userId),
@@ -37,12 +39,7 @@ export const Route = createFileRoute("/servers")({
   pendingMs: 80,
   pendingMinMs: 180,
   pendingComponent: () => <LoadingSkeleton variant="picker" />,
-  loader: async () => {
-    const data = await loadServers();
-    if (data.servers.length === 1 && data.availableGuilds.length === 0)
-      throw redirect({ href: `/servers/${data.servers[0]!.guildId}` });
-    return data;
-  },
+  loader: () => loadServers(),
   head: () => ({ meta: [{ title: "Your servers · Axex Dashboard" }] }),
   component: ServerPicker,
 });
