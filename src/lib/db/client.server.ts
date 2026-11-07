@@ -22,6 +22,18 @@ export async function ensureDashboardSchema(): Promise<void> {
       avatar TEXT,
       last_login_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`;
+    await query`CREATE TABLE IF NOT EXISTS dashboard.user_guilds (
+      user_id TEXT NOT NULL,
+      guild_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      icon TEXT,
+      owner INTEGER NOT NULL DEFAULT 0,
+      permissions TEXT NOT NULL DEFAULT '0',
+      refreshed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (user_id, guild_id)
+    )`;
+    await query`CREATE INDEX IF NOT EXISTS user_guilds_user_refreshed_idx
+      ON dashboard.user_guilds (user_id, refreshed_at DESC)`;
     await query`CREATE TABLE IF NOT EXISTS dashboard.guild_admins (
       guild_id TEXT NOT NULL,
       user_id TEXT NOT NULL,
