@@ -21,6 +21,23 @@ export const users = dashboard.table("users", {
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const userGuilds = dashboard.table(
+  "user_guilds",
+  {
+    userId: text("user_id").notNull(),
+    guildId: text("guild_id").notNull(),
+    name: text("name").notNull(),
+    icon: text("icon"),
+    owner: integer("owner").notNull().default(0),
+    permissions: text("permissions").notNull().default("0"),
+    refreshedAt: timestamp("refreshed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.guildId] }),
+    index("user_guilds_user_refreshed_idx").on(table.userId, table.refreshedAt),
+  ],
+);
+
 export const guildAdmins = dashboard.table(
   "guild_admins",
   {
