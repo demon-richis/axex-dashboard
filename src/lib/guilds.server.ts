@@ -1,4 +1,5 @@
 import { and, desc, eq, isNull, or } from "drizzle-orm";
+
 import { getDb, type DashboardDb } from "./db/client.server.ts";
 import { botGuilds, guildAdmins, userGuilds, users } from "./db/schema.ts";
 
@@ -41,7 +42,7 @@ export async function listAccessibleGuilds(userId: string, db: DashboardDb = get
     role:
       ownerId === userId || discordOwner === 1
         ? ("owner" as const)
-        : (role as "admin" | "viewer" | null) ?? ("admin" as const),
+        : ((role as "admin" | "viewer" | null) ?? ("admin" as const)),
   }));
 }
 
@@ -58,7 +59,10 @@ export async function listUserGuilds(userId: string, db: DashboardDb = getDb()) 
       lastSeenAt: botGuilds.lastSeenAt,
     })
     .from(userGuilds)
-    .leftJoin(botGuilds, and(eq(botGuilds.guildId, userGuilds.guildId), isNull(botGuilds.removedAt)))
+    .leftJoin(
+      botGuilds,
+      and(eq(botGuilds.guildId, userGuilds.guildId), isNull(botGuilds.removedAt)),
+    )
     .where(eq(userGuilds.userId, userId))
     .orderBy(desc(userGuilds.refreshedAt));
 }
@@ -94,6 +98,7 @@ export async function getVerificationStats(
 ): Promise<Record<string, number> | null> {
   const url = process.env["DATABASE_URL"];
   if (!url) return null;
+
   try {
     const { neon } = await import("@neondatabase/serverless");
     const query = neon(url);
@@ -110,19 +115,22 @@ export async function getVerificationStats(
       expired: 0,
       in_progress: 0,
     };
+
     for (const row of rows) {
       const status = String(row["status"]);
       const normalized = status === "verified" || status === "success" ? "success" : status;
       if (normalized in stats) stats[normalized] = Number(row["count"]);
     }
+
     return stats;
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    if (!/verification_cases|relation.*does not exist/i.test(message))
+    if (!/verification_cases|relation.*does not exist/i.test(message)) {
       console.error(
         "[dashboard] Verification stats unavailable:",
         error instanceof Error ? error.name : "unknown",
       );
+    }
     return null;
   }
 }
