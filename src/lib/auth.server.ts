@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { getDb } from "./db/client.server.ts";
+import { ensureDashboardSchema, getDb } from "./db/client.server.ts";
 import { users } from "./db/schema.ts";
 import { consumeRateLimit } from "./rate-limit.server.ts";
 import { consumeOAuthState, createOAuthState, createSessionCookie } from "./session.server.ts";
@@ -39,6 +39,7 @@ export async function beginOAuth(
   if (!clientId || !redirectUri)
     return new Response("Discord sign-in is not configured", { status: 503 });
   try {
+    await ensureDashboardSchema();
     const limit = await limitFn(`oauth-start:${getClientIp(request)}`, 20, 60_000, now);
     if (!limit.allowed)
       return Response.json(
@@ -81,6 +82,7 @@ const callbackParamsSchema = z.object({
 });
 
 async function saveDiscordUser(profile: z.infer<typeof discordUserSchema>): Promise<void> {
+  await ensureDashboardSchema();
   const db = getDb();
   await db
     .insert(users)
@@ -123,6 +125,7 @@ export async function completeOAuth(
     return redirect(home.toString(), state?.clearCookie);
   }
   try {
+    await ensureDashboardSchema();
     const limit = await limitFn(`oauth-callback:${getClientIp(request)}`, 20, 60_000, now);
     if (!limit.allowed)
       return Response.json(
