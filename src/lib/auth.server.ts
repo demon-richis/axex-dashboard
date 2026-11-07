@@ -51,7 +51,9 @@ export async function beginOAuth(
   }
 
   try {
-    await ensureDashboardSchema();
+    if (limitFn === consumeRateLimit) {
+      await ensureDashboardSchema();
+    }
     const limit = await limitFn(`oauth-start:${getClientIp(request)}`, 20, 60_000, now);
     if (!limit.allowed) {
       return Response.json(
@@ -179,7 +181,9 @@ export async function completeOAuth(
   }
 
   try {
-    await ensureDashboardSchema();
+    if (limitFn === consumeRateLimit) {
+      await ensureDashboardSchema();
+    }
     const limit = await limitFn(`oauth-callback:${getClientIp(request)}`, 20, 60_000, now);
     if (!limit.allowed) {
       return Response.json(
