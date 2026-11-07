@@ -270,10 +270,7 @@ export async function completeOAuth(
     home.searchParams.set("connected", "1");
     return redirect(home.toString(), [state.clearCookie, createSessionCookie(profile.id, now)]);
   } catch (error) {
-    console.error(
-      "[auth] OAuth callback failed:",
-      error instanceof Error ? error.name : "unknown",
-    );
+    console.error("[auth] OAuth callback failed:", error instanceof Error ? error.name : "unknown");
     home.searchParams.set("error", "oauth");
     return redirect(home.toString(), state.clearCookie);
   } finally {
