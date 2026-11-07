@@ -4,7 +4,7 @@
   "outputDirectory": "dist/client",
   "functions": {
     "api/index.mjs": {
-      "includeFiles": "api/dist-server/**"
+      "includeFiles": "dist/server/**"
     }
   },
   "crons": [
