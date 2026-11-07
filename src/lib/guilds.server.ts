@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { getDb, type DashboardDb } from "./db/client.server.ts";
-import { botGuilds, guildAdmins, users } from "./db/schema.ts";
+import { botGuilds, guildAdmins, userGuilds, users } from "./db/schema.ts";
 
 export async function listAccessibleGuilds(userId: string, db: DashboardDb = getDb()) {
   const guilds = await db
@@ -93,4 +93,23 @@ export async function getVerificationStats(
       );
     return null;
   }
+}
+
+
+export async function listUserGuilds(userId: string, db: DashboardDb = getDb()) {
+  return db
+    .select({
+      guildId: userGuilds.guildId,
+      name: userGuilds.name,
+      icon: userGuilds.icon,
+      owner: userGuilds.owner,
+      permissions: userGuilds.permissions,
+      installed: botGuilds.guildId,
+      memberCount: botGuilds.memberCount,
+      lastSeenAt: botGuilds.lastSeenAt,
+    })
+    .from(userGuilds)
+    .leftJoin(botGuilds, and(eq(botGuilds.guildId, userGuilds.guildId), isNull(botGuilds.removedAt)))
+    .where(eq(userGuilds.userId, userId))
+    .orderBy(desc(userGuilds.refreshedAt));
 }
