@@ -84,7 +84,7 @@ export async function beginOAuth(
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "identify guilds");
-  url.searchParams.set("prompt", "consent");
+  if (new URL(request.url).searchParams.get("consent") === "1") {\n    url.searchParams.set("prompt", "consent");\n  }
   url.searchParams.set("state", state.nonce);
 
   return redirect(url.toString(), state.cookie);
