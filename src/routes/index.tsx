@@ -53,8 +53,8 @@ export const featureIcons = {
 
 function LandingPage() {
   const { signedIn, error } = Route.useLoaderData();
-  const signInHref = signedIn ? "/servers" : "/api/auth/discord";
-  const signInLabel = signedIn ? "Open dashboard" : "Login with Discord";
+  const signInHref = "/api/auth/discord";
+  const signInLabel = "Sign in with Discord";
 
   return (
     <div className="landing-page">
@@ -72,10 +72,13 @@ function LandingPage() {
           <a href="#security">Security</a>
         </nav>
 
-        <a className="landing-header-cta" href={signInHref}>
-          {signInLabel}
-          <span aria-hidden="true">↗</span>
-        </a>
+        <div className="landing-header-actions">
+          {signedIn && <a className="landing-header-dashboard" href="/servers">Dashboard</a>}
+          <a className="landing-header-cta" href={signInHref}>
+            {signInLabel}
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       </header>
 
       <main id="main-content">
@@ -128,9 +131,9 @@ function LandingPage() {
                 {signInLabel}
                 <span>↗</span>
               </a>
-              <a className="secondary-cta" href="#features">
-                Explore Axex
-                <span>↓</span>
+              <a className="secondary-cta" href={signedIn ? "/servers" : "#features"}>
+                {signedIn ? "Open dashboard" : "Explore Axex"}
+                <span>{signedIn ? "↗" : "↓"}</span>
               </a>
             </motion.div>
 
