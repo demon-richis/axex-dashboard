@@ -25,7 +25,7 @@ test("OAuth start redirects with identify-only scope and signed state cookie", a
   const location = new URL(response.headers.get("location"));
   assert.equal(location.origin, "https://discord.com");
   assert.equal(location.pathname, "/oauth2/authorize");
-  assert.equal(location.searchParams.get("scope"), "identify");
+  assert.equal(location.searchParams.get("scope"), "identify guilds");
   assert.equal(location.searchParams.has("guilds"), false);
   assert.ok(location.searchParams.get("state"));
   assert.match(response.headers.get("set-cookie"), /axex_oauth_state=/);
