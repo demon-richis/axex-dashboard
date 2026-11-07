@@ -12,23 +12,55 @@ export async function listAccessibleGuilds(userId: string, db: DashboardDb = get
       memberCount: botGuilds.memberCount,
       lastSeenAt: botGuilds.lastSeenAt,
       role: guildAdmins.role,
+      discordOwner: userGuilds.owner,
     })
     .from(botGuilds)
     .leftJoin(
       guildAdmins,
       and(eq(guildAdmins.guildId, botGuilds.guildId), eq(guildAdmins.userId, userId)),
     )
+    .leftJoin(
+      userGuilds,
+      and(eq(userGuilds.guildId, botGuilds.guildId), eq(userGuilds.userId, userId)),
+    )
     .where(
       and(
         isNull(botGuilds.removedAt),
-        or(eq(botGuilds.ownerId, userId), eq(guildAdmins.userId, userId)),
+        or(
+          eq(botGuilds.ownerId, userId),
+          eq(guildAdmins.userId, userId),
+          eq(userGuilds.owner, 1),
+          eq(userGuilds.userId, userId),
+        ),
       ),
     )
     .orderBy(desc(botGuilds.lastSeenAt));
-  return guilds.map(({ ownerId, role, ...guild }) => ({
+
+  return guilds.map(({ ownerId, role, discordOwner, ...guild }) => ({
     ...guild,
-    role: ownerId === userId ? ("owner" as const) : (role as "admin" | "viewer"),
+    role:
+      ownerId === userId || discordOwner === 1
+        ? ("owner" as const)
+        : (role as "admin" | "viewer" | null) ?? ("admin" as const),
   }));
+}
+
+export async function listUserGuilds(userId: string, db: DashboardDb = getDb()) {
+  return db
+    .select({
+      guildId: userGuilds.guildId,
+      name: userGuilds.name,
+      icon: userGuilds.icon,
+      owner: userGuilds.owner,
+      permissions: userGuilds.permissions,
+      installed: botGuilds.guildId,
+      memberCount: botGuilds.memberCount,
+      lastSeenAt: botGuilds.lastSeenAt,
+    })
+    .from(userGuilds)
+    .leftJoin(botGuilds, and(eq(botGuilds.guildId, userGuilds.guildId), isNull(botGuilds.removedAt)))
+    .where(eq(userGuilds.userId, userId))
+    .orderBy(desc(userGuilds.refreshedAt));
 }
 
 export async function getGuildDetails(guildId: string, db: DashboardDb = getDb()) {
@@ -93,23 +125,4 @@ export async function getVerificationStats(
       );
     return null;
   }
-}
-
-
-export async function listUserGuilds(userId: string, db: DashboardDb = getDb()) {
-  return db
-    .select({
-      guildId: userGuilds.guildId,
-      name: userGuilds.name,
-      icon: userGuilds.icon,
-      owner: userGuilds.owner,
-      permissions: userGuilds.permissions,
-      installed: botGuilds.guildId,
-      memberCount: botGuilds.memberCount,
-      lastSeenAt: botGuilds.lastSeenAt,
-    })
-    .from(userGuilds)
-    .leftJoin(botGuilds, and(eq(botGuilds.guildId, userGuilds.guildId), isNull(botGuilds.removedAt)))
-    .where(eq(userGuilds.userId, userId))
-    .orderBy(desc(userGuilds.refreshedAt));
 }
