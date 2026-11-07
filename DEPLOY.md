@@ -15,6 +15,8 @@ Connect `demon-richis/axex-dashboard` to a Vercel project and configure these se
 - `BOT_INVITE_URL`: Axex Discord installation URL.
 - `PUBLIC_URL`: canonical HTTPS origin of the dashboard.
 
+The Vercel rewrites send application requests through `api/index.mjs`, which forwards them to the built TanStack server entry. Keep the configured Vercel build command so the server bundle is included with that function.
+
 Never prefix server values with `VITE_`, print them in logs, or put a Discord bot token in the dashboard. The app validates required settings at runtime. Do not enable unauthenticated access to management routes.
 
 ## 3. Migration and release order
