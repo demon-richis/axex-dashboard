@@ -240,7 +240,7 @@ function AdminsPage() {
       name: row.globalName ?? row.username ?? "Not seen yet",
       username: row.username,
       avatar: row.avatar,
-      role: row.role,
+      role: row.role as Role,
       addedBy: row.addedBy,
       createdAt: new Date(row.createdAt).toISOString(),
     })),

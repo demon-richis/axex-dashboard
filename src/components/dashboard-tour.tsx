@@ -29,7 +29,7 @@ export function DashboardTour({
     });
 
     const { driver } = await import("driver.js");
-    const steps: DriveStep[] = [
+    const steps = ([
       {
         element: '[data-tour="server-switcher"]',
         popover: {
@@ -97,7 +97,7 @@ export function DashboardTour({
           align: "start",
         },
       },
-    ].filter((step) => {
+    ] satisfies DriveStep[]).filter((step) => {
       if (typeof step.element !== "string") return true;
       return Boolean(document.querySelector(step.element));
     });
