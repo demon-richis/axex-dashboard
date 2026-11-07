@@ -21,7 +21,11 @@ const discordGuildSchema = z.object({
   permissions: z.string().regex(/^\d+$/).optional().default("0"),
 });
 
-function parseDiscordPayload<T>(context: string, schema: z.ZodType<T>, payload: unknown): T {
+function parseDiscordPayload<Schema extends z.ZodTypeAny>(
+  context: string,
+  schema: Schema,
+  payload: unknown,
+): z.infer<Schema> {
   const result = schema.safeParse(payload);
   if (!result.success) {
     console.error(
