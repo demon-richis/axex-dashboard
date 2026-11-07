@@ -18,14 +18,8 @@ export async function getGuildAccess(
       adminRole: guildAdmins.role,
     })
     .from(botGuilds)
-    .leftJoin(
-      userGuilds,
-      and(eq(userGuilds.guildId, guildId), eq(userGuilds.userId, userId)),
-    )
-    .leftJoin(
-      guildAdmins,
-      and(eq(guildAdmins.guildId, guildId), eq(guildAdmins.userId, userId)),
-    )
+    .leftJoin(userGuilds, and(eq(userGuilds.guildId, guildId), eq(userGuilds.userId, userId)))
+    .leftJoin(guildAdmins, and(eq(guildAdmins.guildId, guildId), eq(guildAdmins.userId, userId)))
     .where(
       and(
         eq(botGuilds.guildId, guildId),
@@ -40,10 +34,15 @@ export async function getGuildAccess(
     .limit(1);
 
   if (!guild) return null;
-  if (guild.ownerId === userId || guild.discordOwner === 1) return { guildId, role: "owner" };
-  if (guild.adminRole === "admin" || guild.adminRole === "viewer")
+  if (guild.ownerId === userId || guild.discordOwner === 1) {
+    return { guildId, role: "owner" };
+  }
+  if (guild.adminRole === "admin" || guild.adminRole === "viewer") {
     return { guildId, role: guild.adminRole };
-  if (guild.discordOwner === 0) return { guildId, role: "admin" };
+  }
+  if (guild.discordOwner === 0) {
+    return { guildId, role: "admin" };
+  }
   return null;
 }
 
