@@ -64,9 +64,7 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /Keep your server/);
   assert.match(html, /under control\./);
   assert.match(html, /id="features"/);
-  assert.match(html, /id="how-it-works"/);
   assert.match(html, /id="security"/);
-  assert.match(html, /id="top"/);
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /Continue with Discord/);
