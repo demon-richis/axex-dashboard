@@ -21,11 +21,7 @@ const discordGuildSchema = z.object({
   permissions: z.string().regex(/^\d+$/).optional().default("0"),
 });
 
-function parseDiscordPayload<T>(
-  context: string,
-  schema: z.ZodType<T>,
-  payload: unknown,
-): T {
+function parseDiscordPayload<T>(context: string, schema: z.ZodType<T>, payload: unknown): T {
   const result = schema.safeParse(payload);
   if (!result.success) {
     console.error(
@@ -273,11 +269,7 @@ export async function completeOAuth(
       throw new Error("Discord profile request failed");
     }
 
-    const profile = parseDiscordPayload(
-      "profile",
-      discordUserSchema,
-      await profileResponse.json(),
-    );
+    const profile = parseDiscordPayload("profile", discordUserSchema, await profileResponse.json());
     const guildsResponse = await fetcher("https://discord.com/api/users/@me/guilds", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
