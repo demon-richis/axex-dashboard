@@ -4,6 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { DashboardShell, type ShellGuild } from "../components/dashboard-shell";
 import "../components/pages.css";
+import "../components/dashboard-ux.css";
 
 const guildParams = z.object({ guildId: z.string().regex(/^\d{17,20}$/) });
 const loadGuildShell = createServerFn({ method: "GET" })

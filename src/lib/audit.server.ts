@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { getDb, type DashboardDb } from "./db/client.server.ts";
-import { auditLog } from "./db/schema.ts";
+import { auditLog, users } from "./db/schema.ts";
 
 export async function writeAudit(
   input: {
@@ -39,8 +39,20 @@ export async function listAudit(
   if (input.from) clauses.push(gte(auditLog.createdAt, input.from));
   if (input.to) clauses.push(lte(auditLog.createdAt, input.to));
   return db
-    .select()
+    .select({
+      id: auditLog.id,
+      guildId: auditLog.guildId,
+      actorId: auditLog.actorId,
+      action: auditLog.action,
+      targetId: auditLog.targetId,
+      details: auditLog.details,
+      createdAt: auditLog.createdAt,
+      actorUsername: users.username,
+      actorGlobalName: users.globalName,
+      actorAvatar: users.avatar,
+    })
     .from(auditLog)
+    .leftJoin(users, eq(users.userId, auditLog.actorId))
     .where(and(...clauses))
     .orderBy(desc(auditLog.createdAt))
     .limit(input.pageSize)

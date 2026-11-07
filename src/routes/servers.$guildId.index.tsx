@@ -13,17 +13,22 @@ const loadOverview = createServerFn({ method: "GET" })
       { requireUser },
       { requireGuildAccess },
       { getGuildDetails, getVerificationStats },
+      { listAudit },
     ] = await Promise.all([
       import("@tanstack/react-start/server"),
       import("../lib/current-user.server.ts"),
       import("../lib/access.server.ts"),
       import("../lib/guilds.server.ts"),
+      import("../lib/audit.server.ts"),
     ]);
     const user = await requireUser(getRequest());
-    await requireGuildAccess(user.userId, data.guildId);
+    const access = await requireGuildAccess(user.userId, data.guildId);
     const guild = await getGuildDetails(data.guildId);
     if (!guild) throw new Response("Not found", { status: 404 });
-    const stats = await getVerificationStats(data.guildId);
+    const [stats, activityRows] = await Promise.all([
+      getVerificationStats(data.guildId),
+      listAudit({ guildId: data.guildId, page: 1, pageSize: 5 }),
+    ]);
     return {
       guild: {
         guildId: guild.guildId,
@@ -31,8 +36,19 @@ const loadOverview = createServerFn({ method: "GET" })
         icon: guild.icon,
         memberCount: guild.memberCount,
         lastSeenAt: guild.lastSeenAt,
+        role: access.role,
       },
       stats,
+      activity: activityRows.map((row) => ({
+        id: row.id,
+        actorId: row.actorId,
+        actorName: row.actorGlobalName ?? row.actorUsername,
+        actorAvatar: row.actorAvatar,
+        action: row.action,
+        targetId: row.targetId,
+        details: JSON.stringify(row.details ?? {}),
+        createdAt: row.createdAt.toISOString(),
+      })),
     };
   });
 
@@ -46,7 +62,8 @@ export const Route = createFileRoute("/servers/$guildId/")({
   }),
   component: OverviewPage,
 });
+
 function OverviewPage() {
-  const { guild, stats } = Route.useLoaderData();
-  return <Overview guild={guild} stats={stats} />;
+  const { guild, stats, activity } = Route.useLoaderData();
+  return <Overview guild={guild} stats={stats} activity={activity} />;
 }

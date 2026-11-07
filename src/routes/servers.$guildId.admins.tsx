@@ -1,7 +1,7 @@
 import { LoadingSkeleton } from "../components/loading-skeleton";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { useGuildShell } from "../components/dashboard-shell";
 import "../components/pages.css";
@@ -86,6 +86,21 @@ function AdminsPage() {
   const [toast, setToast] = useState<Toast | null>(null);
   const [busy, setBusy] = useState(false);
   const dirty = drawer && Boolean(userId || role !== "admin");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | Role>("all");
+  const visibleRows = useMemo(() => {
+    const needle = searchTerm.trim().toLocaleLowerCase();
+    return rows.filter((row) => {
+      const matchesText =
+        !needle ||
+        [row.userId, row.username ?? "", row.globalName ?? ""].some((value) =>
+          value.toLocaleLowerCase().includes(needle),
+        );
+      return matchesText && (roleFilter === "all" || row.role === roleFilter);
+    });
+  }, [roleFilter, rows, searchTerm]);
+  const adminCount = rows.filter((row) => row.role === "admin").length;
+  const viewerCount = rows.filter((row) => row.role === "viewer").length;
   useEffect(() => {
     const guard = (event: BeforeUnloadEvent) => {
       if (dirty) {
@@ -198,12 +213,12 @@ function AdminsPage() {
     }
   }
   return (
-    <section>
+    <section className="admin-page">
       <div className="page-title">
         <div>
-          <p className="eyebrow">ACCESS CONTROL</p>
+          <p className="eyebrow">PEOPLE &amp; ACCESS</p>
           <h1>Admins</h1>
-          <p className="muted">People who can view this server’s dashboard.</p>
+          <p className="muted">Owner-managed access to {shell.guild.name}’s dashboard.</p>
         </div>
         {data.canEdit && (
           <button className="button button-primary" onClick={() => setDrawer(true)}>
@@ -211,7 +226,63 @@ function AdminsPage() {
           </button>
         )}
       </div>
-      <div className="card table-card">
+      <div className="access-summary" aria-label="Dashboard access summary">
+        <div className="access-summary-item">
+          <span>Owner</span>
+          <strong>1</strong>
+          <small>Controls this list</small>
+        </div>
+        <div className="access-summary-item">
+          <span>Admins</span>
+          <strong>{adminCount}</strong>
+          <small>Dashboard access</small>
+        </div>
+        <div className="access-summary-item">
+          <span>Viewers</span>
+          <strong>{viewerCount}</strong>
+          <small>Read-only access</small>
+        </div>
+      </div>
+      {!data.canEdit && (
+        <aside className="readonly-note" role="note">
+          <strong>Read-only access.</strong>
+          <span>Only the server owner can add people, remove access, or change roles.</span>
+        </aside>
+      )}
+      <div className="roster-toolbar">
+        <div className="roster-heading">
+          <p className="eyebrow">ACCESS ROSTER</p>
+          <h2>{rows.length + 1} people</h2>
+          <p>
+            1 owner · {adminCount} admins · {viewerCount} viewers
+          </p>
+        </div>
+        <div className="roster-filters">
+          <label className="roster-search">
+            <span className="sr-only">Search admins by name or Discord ID</span>
+            <input
+              className="text-input"
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search people or IDs"
+            />
+          </label>
+          <label>
+            <span className="sr-only">Filter admins by role</span>
+            <select
+              className="select-input"
+              value={roleFilter}
+              onChange={(event) => setRoleFilter(event.target.value as "all" | Role)}
+            >
+              <option value="all">All roles</option>
+              <option value="admin">Admins</option>
+              <option value="viewer">Viewers</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div className="card table-card roster-card">
         <table className="data-table">
           <thead>
             <tr>
@@ -248,7 +319,7 @@ function AdminsPage() {
                 </span>
               </td>
             </tr>
-            {rows.map((row) => (
+            {visibleRows.map((row) => (
               <tr key={row.userId}>
                 <td data-label="Person">
                   <Person
@@ -318,12 +389,23 @@ function AdminsPage() {
             )}
           </div>
         )}
+        {rows.length > 0 && visibleRows.length === 0 && (
+          <div className="roster-no-match" role="status">
+            <strong>No admins match those filters</strong>
+            <p>Try another name, Discord ID, or role.</p>
+            <button
+              className="button button-secondary"
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setRoleFilter("all");
+              }}
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </div>
-      {!data.canEdit && (
-        <p className="muted small">
-          You have read-only access. Only the server owner can change this list.
-        </p>
-      )}
       {drawer && (
         <div
           className="modal-backdrop drawer-overlay"
@@ -376,8 +458,8 @@ function AdminsPage() {
                   value={role}
                   onChange={(event) => setRole(event.target.value as Role)}
                 >
-                  <option value="admin">Admin — manage dashboard access</option>
-                  <option value="viewer">Viewer — read-only access</option>
+                  <option value="admin">Admin — dashboard access</option>
+                  <option value="viewer">Viewer — read-only dashboard access</option>
                 </select>
               </div>
               <div className="dialog-actions">

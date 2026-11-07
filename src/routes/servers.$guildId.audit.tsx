@@ -2,6 +2,7 @@ import { LoadingSkeleton } from "../components/loading-skeleton";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { describeAuditAction, isCalendarDateString, relativeAge } from "../lib/dashboard-view.ts";
 import "../components/pages.css";
 
 const searchSchema = z.object({
@@ -10,14 +11,8 @@ const searchSchema = z.object({
     .regex(/^\d{0,20}$/)
     .optional(),
   action: z.enum(["", "add_admin", "remove_admin", "change_role", "login"]).optional(),
-  from: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
-  to: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
+  from: z.string().refine(isCalendarDateString, "Enter a valid date").or(z.literal("")).optional(),
+  to: z.string().refine(isCalendarDateString, "Enter a valid date").or(z.literal("")).optional(),
   page: z.coerce.number().int().min(1).max(10000).catch(1),
 });
 const inputSchema = z.object({ guildId: z.string().regex(/^\d{17,20}$/) }).merge(searchSchema);
@@ -57,6 +52,8 @@ const loadAudit = createServerFn({ method: "GET" })
       rows: rows.map((row) => ({
         id: row.id,
         actorId: row.actorId,
+        actorName: row.actorGlobalName ?? row.actorUsername,
+        actorAvatar: row.actorAvatar,
         action: row.action,
         targetId: row.targetId,
         details: JSON.stringify(row.details ?? {}),
@@ -94,56 +91,110 @@ function AuditPage() {
   if (search.action) filters.set("action", search.action);
   if (search.from) filters.set("from", search.from);
   if (search.to) filters.set("to", search.to);
+  const hasFilters = Boolean(search.actor || search.action || search.from || search.to);
+
   return (
-    <section>
+    <section className="audit-page">
       <div className="page-title">
         <div>
-          <p className="eyebrow">ACCOUNTABILITY</p>
+          <p className="eyebrow">
+            PEOPLE &amp; HISTORY <span className="title-divider">/</span> ACCESS CONTROL
+          </p>
           <h1>Audit log</h1>
-          <p className="muted">Changes made to {guild.name} dashboard access.</p>
+          <p className="muted">A clear record of changes to dashboard access.</p>
         </div>
+        <a className="button button-secondary" href={`/servers/${guild.guildId}/admins`}>
+          Manage admins <span aria-hidden="true">↗</span>
+        </a>
       </div>
-      <form className="toolbar" method="get" action={base} aria-label="Filter audit log">
-        <input
-          className="text-input mono"
-          name="actor"
-          placeholder="Actor User ID"
-          defaultValue={search.actor}
-          aria-label="Filter by actor User ID"
-        />
-        <select
-          className="select-input"
-          name="action"
-          defaultValue={search.action}
-          aria-label="Filter by action"
+
+      <section className="card audit-filter-panel" aria-label="Audit log filters">
+        <div className="audit-filter-heading">
+          <div>
+            <strong>Find an access change</strong>
+            <span>Filter by person, action, or date.</span>
+          </div>
+          <span>
+            {rows.length} {rows.length === 1 ? "entry" : "entries"} on this page
+          </span>
+        </div>
+        <div className="audit-quick-ranges" aria-label="Quick date ranges">
+          <button
+            type="button"
+            className="filter-preset"
+            onClick={() => applyRange(base, search, 1)}
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            className="filter-preset"
+            onClick={() => applyRange(base, search, 7)}
+          >
+            Last 7 days
+          </button>
+          <button
+            type="button"
+            className="filter-preset"
+            onClick={() => applyRange(base, search, 30)}
+          >
+            Last 30 days
+          </button>
+        </div>
+        <form
+          className="audit-filter-form"
+          method="get"
+          action={base}
+          aria-label="Filter audit entries"
         >
-          <option value="">All actions</option>
-          <option value="add_admin">Admin added</option>
-          <option value="remove_admin">Admin removed</option>
-          <option value="change_role">Role changed</option>
-          <option value="login">Login</option>
-        </select>
-        <label className="filter-date">
-          <span className="sr-only">From date</span>
-          <input className="text-input" type="date" name="from" defaultValue={search.from} />
-        </label>
-        <label className="filter-date">
-          <span className="sr-only">To date</span>
-          <input className="text-input" type="date" name="to" defaultValue={search.to} />
-        </label>
-        <button className="button button-secondary" type="submit">
-          Apply filters
-        </button>
-      </form>
-      <div className="card table-card">
+          <label className="audit-filter-field">
+            Actor User ID
+            <input
+              className="text-input mono"
+              name="actor"
+              inputMode="numeric"
+              placeholder="Discord ID"
+              defaultValue={search.actor}
+            />
+          </label>
+          <label className="audit-filter-field">
+            Action
+            <select className="select-input" name="action" defaultValue={search.action}>
+              <option value="">All actions</option>
+              <option value="add_admin">Admin added</option>
+              <option value="remove_admin">Admin removed</option>
+              <option value="change_role">Role changed</option>
+              <option value="login">Login</option>
+            </select>
+          </label>
+          <label className="audit-filter-field">
+            From
+            <input className="text-input" type="date" name="from" defaultValue={search.from} />
+          </label>
+          <label className="audit-filter-field">
+            To
+            <input className="text-input" type="date" name="to" defaultValue={search.to} />
+          </label>
+          <button className="button button-primary" type="submit">
+            Apply filters
+          </button>
+          {hasFilters && (
+            <a className="audit-reset" href={base}>
+              Clear all
+            </a>
+          )}
+        </form>
+      </section>
+
+      <div className="card table-card audit-card">
         <table className="data-table audit-table">
           <thead>
             <tr>
               <th>Time</th>
               <th>Actor</th>
               <th>Action</th>
-              <th>Target</th>
-              <th>Details</th>
+              <th>Change</th>
+              <th>Target User ID</th>
             </tr>
           </thead>
           <tbody>
@@ -153,22 +204,29 @@ function AuditPage() {
                 <tr key={row.id}>
                   <td data-label="Time">
                     <time dateTime={row.createdAt} title={createdAt.toLocaleString()}>
-                      {relativeTime(createdAt)}
+                      {relativeAge(createdAt)}
                     </time>
                   </td>
                   <td data-label="Actor">
-                    <span className="mono">{row.actorId}</span>
+                    <div className="audit-person">
+                      <strong>{row.actorName ?? "Discord user"}</strong>
+                      <code>{row.actorId}</code>
+                    </div>
                   </td>
                   <td data-label="Action">
-                    <span className="audit-action">{actionLabel(row.action)}</span>
+                    <span className="audit-event-pill">{actionLabel(row.action)}</span>
                   </td>
-                  <td data-label="Target">
-                    <span className="mono muted">{row.targetId ?? "—"}</span>
-                  </td>
-                  <td data-label="Details">
-                    <span className="audit-detail" title={row.details}>
-                      {row.details === "{}" ? "—" : row.details}
+                  <td data-label="Change">
+                    <span className="audit-change">
+                      {describeAuditAction(row.action, row.details)}
                     </span>
+                  </td>
+                  <td data-label="Target User ID">
+                    {row.targetId ? (
+                      <code className="audit-target">{row.targetId}</code>
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
                   </td>
                 </tr>
               );
@@ -176,25 +234,30 @@ function AuditPage() {
           </tbody>
         </table>
         {rows.length === 0 && (
-          <div className="empty-state">
-            <h2>No matching activity</h2>
+          <div className="empty-state" role="status">
+            <h2>
+              {hasFilters
+                ? "No matching changes"
+                : search.page > 1
+                  ? "End of the audit log"
+                  : "No changes recorded yet"}
+            </h2>
             <p>
-              {search.actor || search.action || search.from || search.to
-                ? "Try changing the filters, or clear them to see the full log."
-                : "Admin changes will appear here when they happen."}
+              {hasFilters
+                ? "Try a different person, action, or date range."
+                : search.page > 1
+                  ? "You’re viewing beyond the last page of recorded changes."
+                  : "Changes to dashboard access will appear here when the server owner updates the roster."}
             </p>
-            {(search.actor || search.action || search.from || search.to) && (
+            {hasFilters && (
               <a className="button button-secondary" href={base}>
-                Clear filters
+                Clear all filters
               </a>
             )}
           </div>
         )}
         <div className="pagination">
-          <span>
-            Page {search.page}
-            {rows.length ? ` · ${rows.length} entries` : ""}
-          </span>
+          <span>Page {search.page}</span>
           <div className="table-actions">
             <a
               className={`small-button ${search.page <= 1 ? "disabled-link" : ""}`}
@@ -216,6 +279,7 @@ function AuditPage() {
     </section>
   );
 }
+
 function actionLabel(action: string) {
   return (
     (
@@ -225,17 +289,22 @@ function actionLabel(action: string) {
         change_role: "Role changed",
         login: "Signed in",
       } as Record<string, string>
-    )[action] ?? action
+    )[action] ?? "Access changed"
   );
 }
-function relativeTime(date: Date) {
-  const seconds = Math.round((date.getTime() - Date.now()) / 1000);
-  const formatter = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
-  if (Math.abs(seconds) < 60) return formatter.format(seconds, "second");
-  if (Math.abs(seconds) < 3600) return formatter.format(Math.round(seconds / 60), "minute");
-  if (Math.abs(seconds) < 86400) return formatter.format(Math.round(seconds / 3600), "hour");
-  return formatter.format(Math.round(seconds / 86400), "day");
+
+function applyRange(base: string, search: { actor?: string; action?: string }, days: number) {
+  const end = new Date();
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - (days - 1));
+  const query = new URLSearchParams();
+  if (search.actor) query.set("actor", search.actor);
+  if (search.action) query.set("action", search.action);
+  query.set("from", start.toISOString().slice(0, 10));
+  query.set("to", end.toISOString().slice(0, 10));
+  window.location.assign(`${base}?${query.toString()}`);
 }
+
 function pageUrl(base: string, params: URLSearchParams, page: number) {
   const next = new URLSearchParams(params);
   next.set("page", String(page));

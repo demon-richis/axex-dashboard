@@ -1,4 +1,4 @@
-# Axex Dashboard — D1 implementation and visual refinement plan
+# Axex Dashboard — D1 foundation and evidence-led UX refinement plan
 
 ## Scope and architecture
 
@@ -23,12 +23,24 @@ The `dashboard` schema and its migration journal schema `dashboard_meta` are ind
 - **Wordmark & Logo:** retain the custom angular AX tile and compact AXEX wordmark, but pair it with deliberate spacing and a small instrument-index label rather than a default text-only brand.
 - **Signature Brand Color:** Axex ember `#f04b2f`, with gold `#ffb21e` kept as the rare high-attention accent.
 
+## Evidence-led authenticated dashboard UX (D2)
+
+The five-product benchmark is saved at `research/bot-dashboard-benchmark.md`. Carl-bot, MEE6, Wick, Dyno, and ProBot generally gate their authenticated dashboard pages; therefore the report separates directly observed public pages from official-documentation evidence and makes no claims about competitors’ protected layouts or accessibility. Apply the reusable lessons—clear server context, concise operational overview, data freshness, attributable activity, and actionable states—without copying feature breadth or implying any feature Axex does not have.
+
+- **Workspace shell:** make the selected server and the current user's owner/admin/viewer role visible throughout the session. Keep first-level destinations stable and grouped by task: Overview, Verification (Coming soon), Admins, Logs (Coming soon), and Audit log. Use one coherent icon family, accessible current-page states, a persistent server switcher, and keyboard-operable navigation/search.
+- **Server picker:** keep the one-server redirect and last-server preference. For multiple servers, add immediate search, a small accurate access/connection summary, and a legible card hierarchy for server identity, member count, role, and heartbeat. Distinguish no accessible servers from a search with no matches and provide relevant next actions.
+- **Overview:** lead with the selected server's actual bot connection state and last-seen freshness, plus an explicit refresh affordance. Keep the seven-day verification count card conditional on available `public.verification_cases` data. Add a compact recent-change feed sourced from the existing audit table (actor, action, target, time, and known actor identity), with a route to the full audit history. Do not synthesize daily trends, uptime percentages, or unsupported system-health metrics.
+- **Admin roster:** add a clear owner/admin/viewer count, searchable names and IDs, and a role filter while preserving the locked owner row and owner-only writes. Explain the read-only status of admin/viewer accounts and the consequences of the selected role without suggesting that admins may edit the roster.
+- **Audit log:** retain actor/action/date filters and pagination, offer convenient date-range shortcuts, and render role/add/remove events in plain language from their saved details. Keep actor and target IDs available, and show known dashboard usernames only when the existing users table has them.
+- **Data and trust constraints:** use only existing dashboard records and read-only queries; any guild-specific loader still calls `getGuildAccess` on every request. Do not add migrations, Bot API scopes, bot tokens, feature modules, permission escalation, or fake data. Preserve empty, loading, denied, stale, and error explanations, visible keyboard focus, semantic labels, reduced-motion support, and the existing Axex palette.
+
 ## Project structure
 
 - `src/routes/`: landing, server picker, guild shell and admin/audit pages, plus API endpoints.
 - `src/components/`: reusable dashboard shell and the landing-page 3D server instrument.
 - `src/lib/`: request security, OAuth/session, DB schema/client, access checks, rate-limits, and domain data operations.
 - `drizzle/`: schema-scoped SQL migrations and Drizzle metadata, isolated under `dashboard_meta`.
+- `research/`: source-grounded competitor benchmark with official URLs and explicit login-gating/evidence limits.
 - `test/`: `node:test` unit/integration tests using PGlite and mocked Discord HTTP.
 - `.github/workflows/`: reproducible CI checks; `README.md`, `DEPLOY.md`, `.env.example`: operator guidance.
 
