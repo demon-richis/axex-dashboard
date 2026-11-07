@@ -115,8 +115,8 @@ function LandingPage() {
           </h1>
 
           <p className="hero-description">
-            Practical protection for Discord communities. Secure verification, server safeguards
-            and clear controls in one place.
+            Practical protection for Discord communities. Secure verification, server safeguards and
+            clear controls in one place.
           </p>
 
           {notice && (
@@ -137,7 +137,9 @@ function LandingPage() {
           </div>
 
           <div className="landing-availability">
-            <span><i /> Server-focused security</span>
+            <span>
+              <i /> Server-focused security
+            </span>
             <span>No bot token in dashboard</span>
           </div>
         </section>
@@ -162,11 +164,15 @@ function LandingPage() {
         <section className="landing-security" id="security">
           <div>
             <p className="landing-section-label">ACCESS & SECURITY</p>
-            <h2>Built to protect.<br /><span>Designed to stay clear.</span></h2>
+            <h2>
+              Built to protect.
+              <br />
+              <span>Designed to stay clear.</span>
+            </h2>
           </div>
           <p>
-            Sign in with Discord to view servers you can manage. Axex requests the access needed
-            for the dashboard and keeps bot credentials separate from your account.
+            Sign in with Discord to view servers you can manage. Axex requests the access needed for
+            the dashboard and keeps bot credentials separate from your account.
           </p>
           <a href={signedIn ? "/servers" : authHref}>
             {signedIn ? "Go to dashboard" : "Sign in with Discord"}
