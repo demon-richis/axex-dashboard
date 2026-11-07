@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { describeAuditAction, isCalendarDateString, relativeAge } from "../lib/dashboard-view.ts";
+import { DataTable, type DataTableColumn } from "../components/data-table";
 import "../components/pages.css";
 
 const searchSchema = z.object({
@@ -92,6 +93,53 @@ function AuditPage() {
   if (search.from) filters.set("from", search.from);
   if (search.to) filters.set("to", search.to);
   const hasFilters = Boolean(search.actor || search.action || search.from || search.to);
+  const columns: DataTableColumn<(typeof rows)[number]>[] = [
+    {
+      id: "createdAt",
+      label: "Time",
+      accessor: (row) => Date.parse(row.createdAt),
+      cell: (row) => {
+        const createdAt = new Date(row.createdAt);
+        return (
+          <time dateTime={row.createdAt} title={createdAt.toLocaleString()}>
+            {relativeAge(createdAt)}
+          </time>
+        );
+      },
+    },
+    {
+      id: "actor",
+      label: "Actor",
+      accessor: (row) => row.actorName ?? row.actorId,
+      cell: (row) => (
+        <div className="audit-person">
+          <strong>{row.actorName ?? "Discord user"}</strong>
+          <code>{row.actorId}</code>
+        </div>
+      ),
+    },
+    {
+      id: "action",
+      label: "Action",
+      accessor: (row) => actionLabel(row.action),
+      cell: (row) => <span className="audit-event-pill">{actionLabel(row.action)}</span>,
+    },
+    {
+      id: "change",
+      label: "Change",
+      accessor: (row) => describeAuditAction(row.action, row.details),
+      cell: (row) => (
+        <span className="audit-change">{describeAuditAction(row.action, row.details)}</span>
+      ),
+    },
+    {
+      id: "targetId",
+      label: "Target User ID",
+      accessor: (row) => row.targetId ?? "",
+      cell: (row) =>
+        row.targetId ? <code className="audit-target">{row.targetId}</code> : <span className="muted">—</span>,
+    },
+  ];
 
   return (
     <section className="audit-page">
@@ -187,75 +235,37 @@ function AuditPage() {
       </section>
 
       <div className="card table-card audit-card">
-        <table className="data-table audit-table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Actor</th>
-              <th>Action</th>
-              <th>Change</th>
-              <th>Target User ID</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => {
-              const createdAt = new Date(row.createdAt);
-              return (
-                <tr key={row.id}>
-                  <td data-label="Time">
-                    <time dateTime={row.createdAt} title={createdAt.toLocaleString()}>
-                      {relativeAge(createdAt)}
-                    </time>
-                  </td>
-                  <td data-label="Actor">
-                    <div className="audit-person">
-                      <strong>{row.actorName ?? "Discord user"}</strong>
-                      <code>{row.actorId}</code>
-                    </div>
-                  </td>
-                  <td data-label="Action">
-                    <span className="audit-event-pill">{actionLabel(row.action)}</span>
-                  </td>
-                  <td data-label="Change">
-                    <span className="audit-change">
-                      {describeAuditAction(row.action, row.details)}
-                    </span>
-                  </td>
-                  <td data-label="Target User ID">
-                    {row.targetId ? (
-                      <code className="audit-target">{row.targetId}</code>
-                    ) : (
-                      <span className="muted">—</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {rows.length === 0 && (
-          <div className="empty-state" role="status">
-            <h2>
-              {hasFilters
-                ? "No matching changes"
-                : search.page > 1
-                  ? "End of the audit log"
-                  : "No changes recorded yet"}
-            </h2>
-            <p>
-              {hasFilters
-                ? "Try a different person, action, or date range."
-                : search.page > 1
-                  ? "You’re viewing beyond the last page of recorded changes."
-                  : "Changes to dashboard access will appear here when the server owner updates the roster."}
-            </p>
-            {hasFilters && (
-              <a className="button button-secondary" href={base}>
-                Clear all filters
-              </a>
-            )}
-          </div>
-        )}
+                <DataTable
+          rows={rows}
+          columns={columns}
+          rowId={(row) => String(row.id)}
+          tableClassName="audit-table"
+          ariaLabel="Audit log entries"
+          initialSorting={[{ id: "createdAt", desc: true }]}
+          emptyMessage={
+            <div className="empty-state" role="status">
+              <h2>
+                {hasFilters
+                  ? "No matching changes"
+                  : search.page > 1
+                    ? "End of the audit log"
+                    : "No changes recorded yet"}
+              </h2>
+              <p>
+                {hasFilters
+                  ? "Try a different person, action, or date range."
+                  : search.page > 1
+                    ? "You’re viewing beyond the last page of recorded changes."
+                    : "Changes to dashboard access will appear here when the server owner updates the roster."}
+              </p>
+              {hasFilters && (
+                <a className="button button-secondary" href={base}>
+                  Clear all filters
+                </a>
+              )}
+            </div>
+          }
+        />
         <div className="pagination">
           <span>Page {search.page}</span>
           <div className="table-actions">

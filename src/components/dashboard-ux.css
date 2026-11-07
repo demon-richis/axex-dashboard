@@ -1412,3 +1412,107 @@
     transform: none;
   }
 }
+
+
+/* Library integrations: sortable tables, dashboard tour and verification analytics. */
+.table-sort-button {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.table-sort-button:hover,
+.table-sort-button:focus-visible {
+  color: #f7bd57;
+}
+.table-sort-button svg {
+  flex: none;
+  opacity: 0.7;
+}
+.table-empty-state {
+  padding: 24px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+.sidebar-tour {
+  min-height: 44px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 178, 30, 0.2);
+  border-radius: 9px;
+  background: rgba(255, 178, 30, 0.055);
+  color: #d9b46d;
+  text-align: left;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.sidebar-tour:hover {
+  border-color: rgba(255, 178, 30, 0.42);
+  background: rgba(255, 178, 30, 0.1);
+  color: #ffd58a;
+}
+.sidebar-tour svg {
+  flex: none;
+}
+.verification-chart {
+  min-width: 0;
+  padding: 18px 20px 12px;
+  border-color: rgba(255, 255, 255, 0.085);
+  background:
+    linear-gradient(135deg, rgba(255, 178, 30, 0.025), transparent 55%),
+    var(--surface);
+}
+.verification-chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.verification-chart-heading .eyebrow {
+  margin: 0;
+  font-size: 9px;
+}
+.verification-chart-heading h2 {
+  margin: 3px 0;
+  font-size: 17px;
+  letter-spacing: -0.025em;
+}
+.verification-chart-heading .muted {
+  margin: 0;
+  font-size: 11px;
+}
+.chart-period {
+  flex: none;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.verification-chart-body {
+  width: 100%;
+  height: 250px;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .verification-chart {
+    padding: 15px 12px 10px;
+  }
+  .verification-chart-body {
+    height: 225px;
+  }
+}

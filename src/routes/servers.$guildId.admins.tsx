@@ -4,6 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { useGuildShell } from "../components/dashboard-shell";
+import { DataTable, type DataTableColumn } from "../components/data-table";
 import "../components/pages.css";
 
 const guildParams = z.object({ guildId: z.string().regex(/^\d{17,20}$/) });
@@ -60,6 +61,16 @@ export const Route = createFileRoute("/servers/$guildId/admins")({
   component: AdminsPage,
 });
 type Role = "admin" | "viewer";
+type RosterEntry = {
+  kind: "owner" | "member";
+  userId: string;
+  name: string;
+  username: string | null;
+  avatar: string | null;
+  role: "owner" | Role;
+  addedBy: string | null;
+  createdAt: string | null;
+};
 type Toast = { type: "success" | "error"; text: string; undo?: () => void };
 async function mutate(body: object) {
   const response = await fetch("/api/admins", {
@@ -212,6 +223,105 @@ function AdminsPage() {
       setToast({ type: "error", text: "Clipboard access isn’t available." });
     }
   }
+  const rosterEntries: RosterEntry[] = [
+    {
+      kind: "owner",
+      userId: data.ownerId,
+      name: data.owner?.globalName ?? data.owner?.username ?? "Not seen yet",
+      username: data.owner?.username ?? null,
+      avatar: data.owner?.avatar ?? null,
+      role: "owner",
+      addedBy: null,
+      createdAt: null,
+    },
+    ...visibleRows.map((row) => ({
+      kind: "member" as const,
+      userId: row.userId,
+      name: row.globalName ?? row.username ?? "Not seen yet",
+      username: row.username,
+      avatar: row.avatar,
+      role: row.role,
+      addedBy: row.addedBy,
+      createdAt: new Date(row.createdAt).toISOString(),
+    })),
+  ];
+  const rosterColumns: DataTableColumn<RosterEntry>[] = [
+    {
+      id: "person",
+      label: "Person",
+      accessor: (row) => row.name,
+      cell: (row) => <Person name={row.name} avatar={row.avatar} id={row.userId} />,
+    },
+    {
+      id: "userId",
+      label: "Discord User ID",
+      accessor: (row) => row.userId,
+      cell: (row) => <Id id={row.userId} copy={() => void copy(row.userId)} />,
+    },
+    {
+      id: "role",
+      label: "Role",
+      accessor: (row) => row.role,
+      cell: (row) =>
+        row.kind === "owner" ? (
+          <span className="role-badge role-owner">Owner</span>
+        ) : data.canEdit ? (
+          <label>
+            <span className="sr-only">Role for {row.username ?? row.userId}</span>
+            <select
+              className="select-input"
+              value={row.role}
+              onChange={(event) => void changeRole(row.userId, event.target.value as Role)}
+            >
+              <option value="admin">Admin</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </label>
+        ) : (
+          <span className={"role-badge role-" + row.role}>{row.role}</span>
+        ),
+    },
+    {
+      id: "addedBy",
+      label: "Added by",
+      accessor: (row) => row.addedBy ?? "",
+      cell: (row) => <span className="mono muted">{row.addedBy ?? "—"}</span>,
+    },
+    {
+      id: "createdAt",
+      label: "Date added",
+      accessor: (row) => (row.createdAt ? Date.parse(row.createdAt) : 0),
+      cell: (row) =>
+        row.createdAt ? (
+          <time dateTime={row.createdAt}>{new Date(row.createdAt).toLocaleDateString()}</time>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      sortable: false,
+      accessor: (row) => row.userId,
+      cell: (row) =>
+        row.kind === "owner" ? (
+          <span className="owner-lock" title="The server owner cannot be changed or removed.">
+            🔒 Locked
+          </span>
+        ) : data.canEdit ? (
+          <button
+            className="small-button danger"
+            type="button"
+            onClick={() => {
+              setRemoveId(row.userId);
+              setConfirmId("");
+            }}
+          >
+            Remove
+          </button>
+        ) : null,
+    },
+  ];
   return (
     <section className="admin-page">
       <div className="page-title">
@@ -283,98 +393,13 @@ function AdminsPage() {
         </div>
       </div>
       <div className="card table-card roster-card">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Person</th>
-              <th>Discord User ID</th>
-              <th>Role</th>
-              <th>Added by</th>
-              <th>Date added</th>
-              <th>
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="owner-row">
-              <td data-label="Person">
-                <Person
-                  name={data.owner?.globalName ?? data.owner?.username ?? "Not seen yet"}
-                  avatar={data.owner?.avatar ?? null}
-                  id={data.ownerId}
-                />
-              </td>
-              <td data-label="Discord User ID">
-                <Id id={data.ownerId} copy={() => void copy(data.ownerId)} />
-              </td>
-              <td data-label="Role">
-                <span className="role-badge role-owner">Owner</span>
-              </td>
-              <td data-label="Added by">—</td>
-              <td data-label="Date added">—</td>
-              <td data-label="Actions">
-                <span className="owner-lock" title="The server owner cannot be changed or removed.">
-                  🔒 Locked
-                </span>
-              </td>
-            </tr>
-            {visibleRows.map((row) => (
-              <tr key={row.userId}>
-                <td data-label="Person">
-                  <Person
-                    name={row.globalName ?? row.username ?? "Not seen yet"}
-                    avatar={row.avatar}
-                    id={row.userId}
-                  />
-                </td>
-                <td data-label="Discord User ID">
-                  <Id id={row.userId} copy={() => void copy(row.userId)} />
-                </td>
-                <td data-label="Role">
-                  {data.canEdit ? (
-                    <label>
-                      <span className="sr-only">Role for {row.username ?? row.userId}</span>
-                      <select
-                        className="select-input"
-                        value={row.role}
-                        onChange={(event) =>
-                          void changeRole(row.userId, event.target.value as Role)
-                        }
-                      >
-                        <option value="admin">Admin</option>
-                        <option value="viewer">Viewer</option>
-                      </select>
-                    </label>
-                  ) : (
-                    <span className={`role-badge role-${row.role}`}>{row.role}</span>
-                  )}
-                </td>
-                <td data-label="Added by">
-                  <span className="mono muted">{row.addedBy}</span>
-                </td>
-                <td data-label="Date added">
-                  <time dateTime={new Date(row.createdAt).toISOString()}>
-                    {new Date(row.createdAt).toLocaleDateString()}
-                  </time>
-                </td>
-                <td data-label="Actions">
-                  {data.canEdit && (
-                    <button
-                      className="small-button danger"
-                      onClick={() => {
-                        setRemoveId(row.userId);
-                        setConfirmId("");
-                      }}
-                    >
-                      Remove
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          rows={rosterEntries}
+          columns={rosterColumns}
+          rowId={(row) => row.userId}
+          rowClassName={(row) => (row.kind === "owner" ? "owner-row" : undefined)}
+          ariaLabel="Dashboard access roster"
+        />
         {rows.length === 0 && (
           <div className="empty-state">
             <h2>No admins added yet</h2>
