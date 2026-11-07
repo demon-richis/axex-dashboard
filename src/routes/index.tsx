@@ -1,7 +1,7 @@
+import { motion } from "framer-motion";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { LoadingSkeleton } from "../components/loading-skeleton";
-import { HeroDiorama } from "../components/hero-diorama";
 import "../components/dashboard.css";
 import "../components/landing.css";
 
@@ -24,435 +24,267 @@ export const Route = createFileRoute("/")({
   loader: () => loadLanding(),
   head: () => ({
     meta: [
-      { title: "Axex — Clear control for your Discord servers" },
+      { title: "Axex — Discord security, under control." },
       {
         name: "description",
         content:
-          "See when Axex last checked in, set owner-defined dashboard access, and review administrative changes in one secure place.",
+          "Axex is a security-first Discord bot and dashboard for moderation, verification, anti-nuke protection and server control.",
       },
     ],
   }),
   component: LandingPage,
 });
 
+const features = [
+  ["01", "Anti-nuke", "Protect roles, channels, webhooks and critical server settings from destructive changes."],
+  ["02", "Verification", "Gate new members with a clean verification flow and actionable security logs."],
+  ["03", "Raid protection", "Detect abnormal joins and coordinated activity before it becomes a problem."],
+  ["04", "Moderation", "Give your staff the controls they need without turning the dashboard into a settings maze."],
+  ["05", "Audit trail", "Know what changed, who changed it and when. Keep important actions traceable."],
+  ["06", "Live dashboard", "See connected servers, health and configuration from one focused control surface."],
+] as const;
+
+export const featureIcons = {
+  shield: "◈",
+  pulse: "⌁",
+  lock: "□",
+  arrow: "↗",
+};
+
 function LandingPage() {
   const { signedIn, error } = Route.useLoaderData();
   const signInHref = signedIn ? "/servers" : "/api/auth/discord";
-  const signInLabel = signedIn ? "Open your dashboard" : "Login with Discord";
+  const signInLabel = signedIn ? "Open dashboard" : "Login with Discord";
 
   return (
     <div className="landing-page">
-      <a className="skip-link" href="#main-content">
-        Skip to content
-      </a>
-      <header className="landing-header" id="top">
-        <a className="brand" href="/" aria-label="Axex Dashboard home">
-          <span className="brand-mark" aria-hidden="true">
-            AX
-          </span>
-          <span className="wordmark">
-            AXEX <span className="brand-divider">/</span> CONTROL
-          </span>
+      <a className="skip-link" href="#main-content">Skip to content</a>
+
+      <header className="landing-header">
+        <a className="landing-brand" href="/" aria-label="Axex home">
+          <span className="landing-brand-mark">AX</span>
+          <span>AXEX</span>
         </a>
 
         <nav className="landing-nav" aria-label="Main navigation">
-          <a href="#capabilities">What you can see</a>
-          <a href="#how-it-works">How access works</a>
+          <a href="#features">Features</a>
+          <a href="#workflow">How it works</a>
           <a href="#security">Security</a>
         </nav>
 
-        <details className="landing-mobile-menu">
-          <summary aria-label="Open site navigation">
-            <span>Menu</span>
-            <span className="menu-glyph" aria-hidden="true">
-              +
-            </span>
-          </summary>
-          <nav className="mobile-menu-panel" aria-label="Mobile navigation">
-            <a
-              href="#capabilities"
-              onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")}
-            >
-              What you can see
-            </a>
-            <a
-              href="#how-it-works"
-              onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")}
-            >
-              How access works
-            </a>
-            <a
-              href="#security"
-              onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")}
-            >
-              Security
-            </a>
-          </nav>
-        </details>
-
-        <a className="header-cta" href={signInHref}>
-          <span>{signedIn ? "Dashboard" : "Sign in"}</span>
-          <ArrowIcon />
+        <a className="landing-header-cta" href={signInHref}>
+          {signInLabel}
+          <span aria-hidden="true">↗</span>
         </a>
       </header>
 
       <main id="main-content">
-        <section className="landing-hero" aria-labelledby="landing-title">
+        <section className="landing-hero">
           <div className="hero-copy">
-            <div className="hero-kicker">
-              <span className="eyebrow-mark" />
-              <span>AXEX SERVER CONTROL</span>
-              <span className="hero-kicker-note">01 — OWNER OPERATED</span>
-            </div>
-            <h1 id="landing-title">
-              Safer servers.
+            <motion.p
+              className="hero-eyebrow"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+            >
+              <span className="live-dot" /> DISCORD SECURITY PLATFORM
+            </motion.p>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.05 }}
+            >
+              Security that
               <br />
-              <em>Clearer control.</em>
-            </h1>
-            <p className="hero-description">
-              Know when Axex last checked in. Decide who can use your dashboard. See the changes
-              that matter—without the noise.
-            </p>
+              <span>stays ahead.</span>
+            </motion.h1>
+
+            <motion.p
+              className="hero-lead"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.12 }}
+            >
+              Axex protects your Discord server without making your staff fight a complicated
+              dashboard. Fast controls. Clear signals. Serious protection.
+            </motion.p>
+
             {error && (
-              <div className="inline-alert" role="status" aria-live="polite">
+              <div className="landing-alert" role="status">
                 {error === "state"
-                  ? "Sign-in expired. Please try again."
-                  : "Discord sign-in didn’t finish. Please try again."}
+                  ? "Your Discord sign-in expired. Start again."
+                  : "Discord sign-in did not finish. Please try again."}
               </div>
             )}
-            <div className="hero-actions">
-              <a className="login-button" href={signInHref}>
-                <span>{signInLabel}</span>
-                <ArrowIcon />
+
+            <motion.div
+              className="hero-actions"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.18 }}
+            >
+              <a className="primary-cta" href={signInHref}>
+                {signInLabel}
+                <span>↗</span>
               </a>
-              <a className="text-link" href="#capabilities">
-                See what’s inside <span aria-hidden="true">↓</span>
+              <a className="secondary-cta" href="#features">
+                Explore Axex
+                <span>↓</span>
               </a>
-            </div>
-            <div className="hero-assurance">
-              <span className="assurance-mark" aria-hidden="true">
-                <ShieldIcon />
-              </span>
-              <span>
-                Discord confirms your identity only.
-                <br />
-                The dashboard never stores a bot token.
-              </span>
+            </motion.div>
+
+            <div className="hero-proof">
+              <span><b>24/7</b> protection</span>
+              <span><b>Server</b> scoped</span>
+              <span><b>No</b> bot token in dashboard</span>
             </div>
           </div>
 
-          <div className="hero-visual-wrap">
-            <HeroDiorama />
-            <p className="visual-caption">
-              <span>THE ACCESS MODEL</span>
-              <span>IDENTITY → OWNER RULES → SERVER</span>
+          <motion.div
+            className="hero-product"
+            initial={{ opacity: 0, scale: 0.98, y: 14 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.1 }}
+          >
+            <div className="product-window">
+              <div className="product-bar">
+                <div className="window-dots"><i /><i /><i /></div>
+                <span>AXEX / DASHBOARD</span>
+                <span className="window-secure">SECURE</span>
+              </div>
+
+              <div className="product-body">
+                <aside className="product-sidebar">
+                  <div className="mini-brand"><span>AX</span> AXEX</div>
+                  <div className="mini-nav active">Overview</div>
+                  <div className="mini-nav">Protection</div>
+                  <div className="mini-nav">Verification</div>
+                  <div className="mini-nav">Audit log</div>
+                  <div className="mini-nav">Admins</div>
+                  <div className="mini-spacer" />
+                  <div className="mini-status"><span /> Bot connected</div>
+                </aside>
+
+                <div className="product-main">
+                  <div className="mock-heading">
+                    <div>
+                      <small>SERVER OVERVIEW</small>
+                      <strong>DEMON&apos;S SERVER</strong>
+                    </div>
+                    <span className="mock-online"><i /> Online</span>
+                  </div>
+
+                  <div className="mock-stats">
+                    <div><small>MEMBERS</small><b>12,480</b><span>+4.8% this week</span></div>
+                    <div><small>PROTECTION</small><b>Active</b><span>All systems normal</span></div>
+                    <div><small>INCIDENTS</small><b>03</b><span>Last 30 days</span></div>
+                  </div>
+
+                  <div className="mock-panel">
+                    <div className="mock-panel-head"><span>Protection status</span><small>LIVE</small></div>
+                    <div className="mock-row"><span><i className="mock-check">✓</i> Anti-nuke</span><b>ACTIVE</b></div>
+                    <div className="mock-row"><span><i className="mock-check">✓</i> Raid protection</span><b>ACTIVE</b></div>
+                    <div className="mock-row"><span><i className="mock-check">✓</i> Verification</span><b>ACTIVE</b></div>
+                  </div>
+
+                  <div className="mock-log">
+                    <div><span className="log-dot orange" /><span>Channel permission change</span><small>2m ago</small></div>
+                    <div><span className="log-dot" /><span>Verification case resolved</span><small>18m ago</small></div>
+                    <div><span className="log-dot" /><span>Protection heartbeat</span><small>31m ago</small></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        <section className="trust-strip" aria-label="Axex platform highlights">
+          <span>BUILT FOR DISCORD</span>
+          <span>MODERATION</span>
+          <span>VERIFICATION</span>
+          <span>ANTI-NUKE</span>
+          <span>RAID PROTECTION</span>
+          <span>AUDITABILITY</span>
+        </section>
+
+        <section className="features-section" id="features">
+          <div className="section-head">
+            <div>
+              <p className="section-kicker">THE TOOLKIT</p>
+              <h2>Everything your<br /><span>server needs.</span></h2>
+            </div>
+            <p>
+              Axex is built around the things that actually matter when a Discord server gets
+              busy: protection, visibility and control.
             </p>
           </div>
 
-          <div className="hero-bottomline" aria-label="Product principles">
-            <span>
-              <b>01</b> Identity, kept minimal
-            </span>
-            <span>
-              <b>02</b> Roles, set by the owner
-            </span>
-            <span>
-              <b>03</b> Changes, recorded
-            </span>
+          <div className="feature-grid">
+            {features.map(([number, title, description]) => (
+              <motion.article
+                key={number}
+                className="feature-card"
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+              >
+                <div className="feature-top"><span>{number}</span><b>AX</b></div>
+                <h3>{title}</h3>
+                <p>{description}</p>
+                <span className="feature-arrow">↗</span>
+              </motion.article>
+            ))}
           </div>
         </section>
 
-        <section
-          className="capabilities-section"
-          id="capabilities"
-          aria-labelledby="capabilities-title"
-        >
-          <div className="section-shell">
-            <div className="landing-section-heading capabilities-heading">
-              <p className="section-eyebrow">
-                <span>THE CONTROL ROOM</span>
-                <span>01 / 03</span>
-              </p>
-              <h2 id="capabilities-title">
-                The useful signals.
-                <br />
-                <em>Nothing extra.</em>
-              </h2>
-              <p>
-                Axex brings the server details owners need into one calm, readable place—not another
-                maze of bot settings.
-              </p>
+        <section className="workflow-section" id="workflow">
+          <div className="section-head workflow-head">
+            <div>
+              <p className="section-kicker">SIMPLE BY DESIGN</p>
+              <h2>From install to<br /><span>protected.</span></h2>
             </div>
+            <p>Discord does the identity. Axex handles the server. You stay in control.</p>
+          </div>
 
-            <div className="capability-list">
-              <article className="capability-item">
-                <div className="capability-topline">
-                  <span>01</span>
-                  <CapabilityIcon name="signal" />
-                </div>
-                <h3>Know Axex is there</h3>
-                <p>
-                  See connected or offline status from the bot’s last heartbeat, with a clear “last
-                  seen” time when it is stale.
-                </p>
-                <span className="capability-foot">BOT PRESENCE / HEARTBEAT</span>
-              </article>
-              <article className="capability-item">
-                <div className="capability-topline">
-                  <span>02</span>
-                  <CapabilityIcon name="access" />
-                </div>
-                <h3>Choose who can manage</h3>
-                <p>
-                  The server owner can register dashboard admins and viewers by Discord User ID.
-                  Access follows the dashboard’s owner list—not Discord role permissions.
-                </p>
-                <span className="capability-foot">OWNER / ADMIN / VIEWER</span>
-              </article>
-              <article className="capability-item">
-                <div className="capability-topline">
-                  <span>03</span>
-                  <CapabilityIcon name="audit" />
-                </div>
-                <h3>Keep a useful record</h3>
-                <p>
-                  Admin additions, removals, and role changes appear in a filterable audit log with
-                  actor, target, and time.
-                </p>
-                <span className="capability-foot">ACCESS CHANGES / AUDIT LOG</span>
-              </article>
+          <div className="workflow-grid">
+            <article><span>01</span><h3>Add Axex</h3><p>Invite Axex to the server you want protected and give it the permissions your selected modules need.</p></article>
+            <article><span>02</span><h3>Login with Discord</h3><p>Authorize your identity and server-management access. Axex only uses the data needed for the dashboard.</p></article>
+            <article><span>03</span><h3>Run the server</h3><p>Open your server, configure protection and keep an eye on the events that matter.</p></article>
+          </div>
+        </section>
+
+        <section className="security-section" id="security">
+          <div className="security-card">
+            <div>
+              <p className="section-kicker">SECURITY IS THE PRODUCT</p>
+              <h2>Built for people who<br /><span>cannot afford surprises.</span></h2>
+              <p className="security-lead">
+                Server access is explicit, sensitive credentials stay out of the dashboard, and
+                important administrative actions can be traced back to an actor and a time.
+              </p>
+              <a className="security-cta" href={signInHref}>{signInLabel} <span>↗</span></a>
+            </div>
+            <div className="security-list">
+              <div><span>01</span><strong>Server-scoped access</strong><p>Only servers you can manage are presented for control.</p></div>
+              <div><span>02</span><strong>Credential separation</strong><p>The dashboard does not ask you for a bot token.</p></div>
+              <div><span>03</span><strong>Traceable changes</strong><p>Administrative changes have an audit trail.</p></div>
+              <div><span>04</span><strong>Clear system state</strong><p>Connection and protection status are surfaced directly.</p></div>
             </div>
           </div>
         </section>
 
-        <section className="workflow-section" id="how-it-works" aria-labelledby="workflow-title">
-          <div className="section-shell">
-            <div className="workflow-intro">
-              <div>
-                <p className="section-eyebrow">
-                  <span>BUILT AROUND OWNERSHIP</span>
-                  <span>02 / 03</span>
-                </p>
-                <h2 id="workflow-title">
-                  Access has a<br />
-                  <em>clear path.</em>
-                </h2>
-              </div>
-              <p className="workflow-summary">
-                No Discord permission guesswork. The dashboard checks its own server-owner and
-                registered-admin records every time someone opens a server view.
-              </p>
-            </div>
-
-            <ol className="workflow-steps">
-              <li>
-                <span className="step-number">01</span>
-                <h3>Confirm identity</h3>
-                <p>
-                  Sign in with Discord’s <code>identify</code> scope. Axex receives no guild-list
-                  permission.
-                </p>
-              </li>
-              <li>
-                <span className="step-number">02</span>
-                <h3>Set the roster</h3>
-                <p>
-                  The owner adds trusted people by User ID and chooses admin or read-only viewer.
-                </p>
-              </li>
-              <li>
-                <span className="step-number">03</span>
-                <h3>Review the record</h3>
-                <p>
-                  Check the bot heartbeat and see administrative access changes in the audit log.
-                </p>
-              </li>
-            </ol>
-          </div>
-        </section>
-
-        <section className="security-section" id="security" aria-labelledby="security-title">
-          <div className="section-shell security-shell">
-            <div className="security-copy">
-              <p className="section-eyebrow">
-                <span>SECURITY, BY DESIGN</span>
-                <span>03 / 03</span>
-              </p>
-              <h2 id="security-title">
-                Your bot stays
-                <br />
-                <em>yours.</em>
-              </h2>
-              <p>
-                Axex Dashboard is an identity and administration surface. It is not a place for bot
-                credentials, broad Discord permissions, or hidden access rules.
-              </p>
-              <a className="security-link" href={signInHref}>
-                {signInLabel}
-                <ArrowIcon />
-              </a>
-            </div>
-            <ul className="security-points">
-              <li>
-                <span className="security-check">
-                  <CheckIcon />
-                </span>
-                <span>
-                  <strong>Identity only</strong>
-                  <small>Discord OAuth requests the `identify` scope.</small>
-                </span>
-              </li>
-              <li>
-                <span className="security-check">
-                  <CheckIcon />
-                </span>
-                <span>
-                  <strong>No dashboard bot token</strong>
-                  <small>The dashboard never asks for or stores your bot token.</small>
-                </span>
-              </li>
-              <li>
-                <span className="security-check">
-                  <CheckIcon />
-                </span>
-                <span>
-                  <strong>Owner-defined access</strong>
-                  <small>Owner, admin, and viewer rules are checked from the database.</small>
-                </span>
-              </li>
-              <li>
-                <span className="security-check">
-                  <CheckIcon />
-                </span>
-                <span>
-                  <strong>Traceable changes</strong>
-                  <small>Dashboard access changes are written to the audit log.</small>
-                </span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="closing-section" aria-labelledby="closing-title">
-          <div className="closing-mark" aria-hidden="true">
-            AX
-          </div>
-          <div>
-            <p className="section-eyebrow">A CLEARER VIEW STARTS HERE</p>
-            <h2 id="closing-title">
-              Keep control
-              <br className="mobile-break" /> close.
-            </h2>
-          </div>
-          <a className="closing-cta" href={signInHref}>
-            {signInLabel}
-            <ArrowIcon />
-          </a>
+        <section className="final-cta">
+          <p>AXEX / DISCORD SECURITY</p>
+          <h2>Take control of<br /><span>your server.</span></h2>
+          <a className="primary-cta" href={signInHref}>{signInLabel} <span>↗</span></a>
         </section>
       </main>
 
       <footer className="landing-footer">
-        <a className="footer-brand" href="/" aria-label="Axex Dashboard home">
-          <span className="footer-mark">AX</span>
-          <span>
-            AXEX <i>/</i> SERVER CONTROL
-          </span>
-        </a>
-        <span className="footer-note">Built for the people who keep communities safe.</span>
-        <a className="footer-top" href="#top">
-          Back to top ↑
-        </a>
+        <a href="/" className="footer-brand"><span>AX</span> AXEX</a>
+        <span>Discord security, moderation and control.</span>
+        <a href="#main-content">Back to top ↑</a>
       </footer>
     </div>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" className="arrow-icon" fill="none">
-      <path
-        d="M4 10h11M10 4l6 6-6 6"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 3 20 6v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
-      <path
-        d="m8.5 12 2.2 2.2 4.7-4.7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
-      <path
-        d="m4 10 4 4 8-8"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CapabilityIcon({ name }: { name: "signal" | "access" | "audit" }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="capability-icon">
-      {name === "signal" && (
-        <path
-          d="M2.5 12h4l3-6.5 5 13 3.5-8 3.5 1.5"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      )}
-      {name === "access" && (
-        <>
-          <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.7" />
-          <path
-            d="M3.5 20v-1.2c0-2.6 2.1-4.6 4.6-4.6h1.8c2.5 0 4.6 2 4.6 4.6V20M17 8h4M19 6v4"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </>
-      )}
-      {name === "audit" && (
-        <>
-          <path
-            d="M5 3.5h9l5 5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M14 4v5h5M8 13h8M8 16.5h8"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </>
-      )}
-    </svg>
   );
 }
