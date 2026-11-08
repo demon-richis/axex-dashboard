@@ -170,7 +170,8 @@ const faqs = [
   },
   {
     question: "Who can access my dashboard?",
-    answer: "The server owner controls dashboard access. Discord server permissions alone do not grant it.",
+    answer:
+      "The server owner controls dashboard access. Discord server permissions alone do not grant it.",
   },
   {
     question: "Do I need the bot?",
