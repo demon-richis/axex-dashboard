@@ -15,6 +15,7 @@ import {
   LockKeyhole,
   Menu,
   Server,
+  Settings,
   ShieldCheck,
   Sparkles,
   Users,
