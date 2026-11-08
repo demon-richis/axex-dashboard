@@ -1,5 +1,5 @@
 import { LoadingSkeleton } from "../components/loading-skeleton";
-import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, useRouterState } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { DashboardShell, type ShellGuild } from "../components/dashboard-shell";
