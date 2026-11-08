@@ -61,20 +61,24 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
     scripts.every((script) => script.includes(`nonce="${nonce}"`)),
     "every rendered script nonce matches CSP",
   );
-  assert.match(html, /Manage your servers, configure Axex/);
-  assert.match(html, /keep your community secure\./);
-  assert.match(html, /id="features"/);
-  assert.match(html, /id="guide"/);
-  assert.match(html, /id="support"/);
+  assert.match(html, /Discord security\./);
+  assert.match(html, /Under control\./);
+  assert.match(html, /DISCORD SECURITY CONTROL PLANE/);
+  assert.match(html, /id="platform"/);
+  assert.match(html, /id="security"/);
+  assert.match(html, /id="how-it-works"/);
+  assert.match(html, /id="faq"/);
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /Continue with Discord/);
-  assert.match(html, /Permission-aware access/);
-  assert.match(html, /DEMO PREVIEW/);
-  assert.match(html, /Illustrative interface/);
+  assert.match(html, /Permission-aware/);
+  assert.match(html, /PRODUCT PREVIEW/);
+  assert.match(html, /Not live server data/);
+  assert.match(html, /Verification portal/);
+  assert.match(html, /Raid awareness/);
   assert.doesNotMatch(html, /99\.9%|24\.7K|12\.3K|All systems operational/);
   assert.doesNotMatch(html, /No bot token in dashboard/);
-  assert.doesNotMatch(html, /Your servers/);
+  assert.doesNotMatch(html, /Keep your server/);
 
   const malformedPathResponse = await fetch(`${baseUrl}/%E0%A4%A`);
   assert.equal(malformedPathResponse.status, 400);
