@@ -144,7 +144,7 @@ function LandingPage() {
           </span>
         </a>
 
-        <nav className={menuOpen ? "landing-nav landing-nav-open" : "landing-nav"} aria-label="Main navigation">
+        <nav id="landing-navigation" className={menuOpen ? "landing-nav landing-nav-open" : "landing-nav"} aria-label="Main navigation">
           <a className="active" href="#home" onClick={closeMenu}>Home</a>
           <a href="#features" onClick={closeMenu}>Features</a>
           <a href="#guide" onClick={closeMenu}>Guide</a>
@@ -162,7 +162,7 @@ function LandingPage() {
               Dashboard <ArrowUpRight size={14} />
             </a>
           )}
-          <a className="landing-header-cta" href={authHref}>
+          <a className="landing-header-cta" href={authHref} aria-label={signInLabel}>
             <MessageCircle size={16} fill="currentColor" strokeWidth={1.7} />
             <span>{signInLabel}</span>
             <ArrowRight size={15} />
