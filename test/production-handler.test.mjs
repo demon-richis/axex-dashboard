@@ -61,10 +61,11 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
     scripts.every((script) => script.includes(`nonce="${nonce}"`)),
     "every rendered script nonce matches CSP",
   );
-  assert.match(html, /Keep your server/);
-  assert.match(html, /under control\./);
+  assert.match(html, /Manage your servers, configure Axex/);
+  assert.match(html, /keep your community secure\./);
   assert.match(html, /id="features"/);
-  assert.match(html, /id="security"/);
+  assert.match(html, /id="guide"/);
+  assert.match(html, /id="support"/);
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /Continue with Discord/);
