@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
+import { readFile } from "node:fs/promises";
 import { after, test } from "node:test";
 
 let child;
@@ -76,6 +77,16 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /Demo data/);
   assert.match(html, /Verification portal/);
   assert.match(html, /Raid detection/);
+  const landingSource = await readFile(
+    new URL("../src/routes/index.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(landingSource, /The server owner controls dashboard access/);
+  assert.doesNotMatch(landingSource, /Access follows your Discord permissions/);
+  assert.ok(html.includes("All rights reserved."));
+  assert.match(html, /Back to top/);
+  assert.doesNotMatch(html, /landing-hero-copy"[^>]*style="[^"]*opacity:0/);
+  assert.doesNotMatch(html, /landing-hero-visual"[^>]*style="[^"]*opacity:0/);
   assert.doesNotMatch(html, /99\.9%|24\.7K|12\.3K|All systems operational/);
   assert.doesNotMatch(html, /No bot token in dashboard/);
   assert.doesNotMatch(html, /Keep your server/);
