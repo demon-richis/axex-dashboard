@@ -69,7 +69,11 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /Continue with Discord/);
-  assert.match(html, /No bot token in dashboard/);
+  assert.match(html, /Permission-aware access/);
+  assert.match(html, /DEMO PREVIEW/);
+  assert.match(html, /Illustrative interface/);
+  assert.doesNotMatch(html, /99\.9%|24\.7K|12\.3K|All systems operational/);
+  assert.doesNotMatch(html, /No bot token in dashboard/);
   assert.doesNotMatch(html, /Your servers/);
 
   const malformedPathResponse = await fetch(`${baseUrl}/%E0%A4%A`);
