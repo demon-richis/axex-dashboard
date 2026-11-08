@@ -170,7 +170,7 @@ const faqs = [
   },
   {
     question: "Who can access my dashboard?",
-    answer: "Access follows your Discord permissions.",
+    answer: "The server owner controls dashboard access. Discord server permissions alone do not grant it.",
   },
   {
     question: "Do I need the bot?",
@@ -336,7 +336,7 @@ function LandingPage() {
           <section className="landing-hero" aria-labelledby="hero-title">
             <motion.div
               className="landing-hero-copy"
-              initial={{ opacity: 0, y: 18 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.58, ease: "easeOut" }}
             >
@@ -397,7 +397,7 @@ function LandingPage() {
               className="landing-hero-visual"
               role="img"
               aria-label="Illustrative Axex control dashboard preview"
-              initial={{ opacity: 0, y: 22, scale: 0.985 }}
+              initial={false}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.68, delay: 0.12, ease: "easeOut" }}
             >
@@ -546,7 +546,7 @@ function LandingPage() {
             className="landing-section landing-platform"
             id="platform"
             aria-labelledby="platform-title"
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.12 }}
             transition={{ duration: 0.48, ease: "easeOut" }}
@@ -567,7 +567,7 @@ function LandingPage() {
                   <motion.article
                     className="capability-card"
                     key={feature.number}
-                    initial={{ opacity: 0, y: 16 }}
+                    initial={{ y: 16 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.25 }}
                     transition={{ duration: 0.42, delay: index * 0.07, ease: "easeOut" }}
@@ -592,7 +592,7 @@ function LandingPage() {
             className="landing-ecosystem"
             id="security"
             aria-labelledby="ecosystem-title"
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.14 }}
             transition={{ duration: 0.48, ease: "easeOut" }}
@@ -633,7 +633,7 @@ function LandingPage() {
             className="landing-section landing-workflow"
             id="how-it-works"
             aria-labelledby="workflow-title"
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.14 }}
             transition={{ duration: 0.48, ease: "easeOut" }}
@@ -668,7 +668,7 @@ function LandingPage() {
             className="landing-faq"
             id="faq"
             aria-labelledby="faq-title"
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.14 }}
             transition={{ duration: 0.48, ease: "easeOut" }}
@@ -694,7 +694,7 @@ function LandingPage() {
 
           <motion.section
             className="landing-final-cta"
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
@@ -709,23 +709,37 @@ function LandingPage() {
             </div>
             <Button asChild variant="primary" className="final-cta-button">
               <a href={signedIn ? "/servers" : authHref}>
-                Continue with Discord <ArrowRight size={16} />
+                {signedIn ? <LayoutDashboard size={16} /> : <DiscordMark size={16} />}
+                <span>{primaryLabel}</span>
+                <ArrowRight size={16} />
               </a>
             </Button>
           </motion.section>
         </main>
 
-        <footer className="landing-footer">
-          <a className="landing-footer-brand" href="/" aria-label="Axex home">
-            <span className="landing-brand-mark">AX</span>
-            <strong>AXEX</strong>
-          </a>
-          <span className="landing-footer-note">Discord security, under control.</span>
-          <nav className="landing-footer-links" aria-label="Footer">
-            <a href="#platform">Platform</a>
-            <a href="#faq">FAQ</a>
-          </nav>
-          <span className="landing-footer-copy">© 2026 AXEX</span>
+        <footer className="landing-footer" aria-label="Site footer">
+          <div className="landing-footer-main">
+            <a className="landing-footer-brand" href="#home" aria-label="Axex home">
+              <span className="landing-brand-mark">AX</span>
+              <strong>AXEX</strong>
+            </a>
+            <p className="landing-footer-note">Security tools for Discord communities.</p>
+            <nav className="landing-footer-links" aria-label="Footer navigation">
+              <a href="#platform">Platform</a>
+              <a href="#security">Protection</a>
+              <a href="#how-it-works">Setup</a>
+              <a href="#faq">FAQ</a>
+              <a className="landing-footer-top" href="#home">
+                Back to top <ArrowUpRight size={13} aria-hidden="true" />
+              </a>
+            </nav>
+          </div>
+          <div className="landing-footer-bottom">
+            <p className="landing-footer-copy">
+              © {new Date().getFullYear()} Axex. All rights reserved.
+            </p>
+            <span className="landing-footer-caption">Discord security, under control.</span>
+          </div>
         </footer>
       </div>
     </MotionConfig>
