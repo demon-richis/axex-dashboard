@@ -2,22 +2,23 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import {
-  Activity,
   ArrowRight,
   ArrowUpRight,
   BarChart3,
   BookOpen,
   CheckCircle2,
   ChevronRight,
+  FileClock,
   Globe2,
+  LayoutDashboard,
+  ListChecks,
   LockKeyhole,
   Menu,
-  MessageCircle,
   Server,
-  Settings,
   ShieldCheck,
   Sparkles,
   Users,
+  UsersRound,
   X,
   Zap,
 } from "lucide-react";
@@ -77,15 +78,15 @@ const features = [
     icon: Zap,
     number: "03",
     title: "Real-time security",
-    description: "A clearer view of bot connection health and important security activity.",
-    tone: "ember",
+    description: "Keep an eye on connection health and the security activity that matters.",
+    tone: "green",
   },
   {
     icon: Settings,
     number: "04",
     title: "Easy configuration",
     description: "Manage dashboard access and server administration without the clutter.",
-    tone: "gold",
+    tone: "ember",
   },
 ];
 
@@ -106,6 +107,21 @@ const steps = [
     description: "Review activity, manage dashboard access and keep an eye on server status.",
   },
 ];
+
+function DiscordMark({ size = 17 }: { size?: number }) {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.393-.4063-.8742-.6264-1.2495a.077.077 0 0 0-.0785-.037 19.7363 19.7363 0 0 0-4.8852 1.515.069.069 0 0 0-.0321.0276C.5334 9.0468-.319 13.5798.0993 18.057a.0824.0824 0 0 0 .0312.0567c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0781.0781 0 0 0 .0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 0 0-.0416-.1057c-.6528-.2476-1.2738-.5508-1.8722-.9095a.077.077 0 0 1-.0076-.1277c.1258-.094.2517-.1918.3718-.2898a.0743.0743 0 0 1 .0776-.0106c3.9278 1.7933 8.18 1.7933 12.061 0a.074.074 0 0 1 .0785.0094c.1201.098.246.197.3737.291a.077.077 0 0 1-.0066.1276 12.2986 12.2986 0 0 1-1.873.9086.0766.0766 0 0 0-.0407.1066c.3604.6978.7719 1.3626 1.225 1.9932a.076.076 0 0 0 .0842.0285c1.961-.6066 3.9495-1.5218 6.0023-3.0294a.077.077 0 0 0 .0312-.0558c.5004-5.177-.8382-9.6707-3.5485-13.66a.061.061 0 0 0-.0312-.0276ZM8.02 15.331c-1.1825 0-2.1569-1.0857-2.1569-2.419s.955-2.419 2.1569-2.419c1.2113 0 2.176.095 2.1569 2.419 0 1.3333-.955 2.419-2.1569 2.419Zm7.9747 0c-1.1826 0-2.1569-1.0857-2.1569-2.419s.955-2.419 2.1569-2.419c1.2113 0 2.176.095 2.1569 2.419 0 1.3333-.955 2.419-2.1569 2.419Z" />
+    </svg>
+  );
+}
 
 function LandingPage() {
   const { signedIn, connected, error } = Route.useLoaderData();
@@ -175,7 +191,7 @@ function LandingPage() {
             </a>
           )}
           <a className="landing-header-cta" href={authHref} aria-label={signInLabel}>
-            <MessageCircle size={16} fill="currentColor" strokeWidth={1.7} />
+            <DiscordMark size={17} />
             <span>{signInLabel}</span>
             <ArrowRight size={15} />
           </a>
@@ -200,8 +216,10 @@ function LandingPage() {
                 <ShieldCheck size={15} />
               </span>
               <span>GLOBAL DISCORD SECURITY</span>
-              <i />
-              <span className="hero-online">Online</span>
+              <span className="hero-security-label">
+                <CheckCircle2 size={13} />
+                Access-aware
+              </span>
             </div>
 
             <h1>
@@ -241,7 +259,7 @@ function LandingPage() {
                 <LockKeyhole size={13} /> Discord sign-in
               </span>
               <b />
-              <span>No bot token in dashboard</span>
+              <span>Permission-aware access</span>
             </div>
           </div>
 
@@ -255,27 +273,27 @@ function LandingPage() {
                   <ChevronRight size={13} />
                 </div>
                 <div className="preview-nav preview-nav-active">
-                  <BarChart3 size={14} /> Dashboard
+                  <LayoutDashboard size={14} /> Overview
+                </div>
+                <div className="preview-nav preview-nav-soon">
+                  <ShieldCheck size={14} /> Verification
+                  <small>SOON</small>
+                </div>
+                <div className="preview-nav preview-nav-soon">
+                  <ListChecks size={14} /> Logs
+                  <small>SOON</small>
                 </div>
                 <div className="preview-nav">
-                  <Server size={14} /> Servers
+                  <UsersRound size={14} /> Admins
                 </div>
                 <div className="preview-nav">
-                  <Settings size={14} /> Settings
-                </div>
-                <div className="preview-nav">
-                  <Activity size={14} /> Audit logs
-                </div>
-                <div className="preview-nav">
-                  <MessageCircle size={14} /> Support
+                  <FileClock size={14} /> Audit log
                 </div>
                 <div className="preview-profile">
                   <span className="preview-avatar">AX</span>
                   <span>
-                    <strong>Server owner</strong>
-                    <small>
-                      <i /> Online
-                    </small>
+                    <strong>Server workspace</strong>
+                    <small>Role-aware access</small>
                   </span>
                   <ChevronRight size={13} />
                 </div>
@@ -287,7 +305,8 @@ function LandingPage() {
                     <span>AX</span> / OVERVIEW
                   </span>
                   <span className="preview-operational">
-                    <i /> All systems operational
+                    <CheckCircle2 size={12} />
+                    DEMO PREVIEW
                   </span>
                 </div>
                 <div className="preview-welcome">
@@ -295,8 +314,8 @@ function LandingPage() {
                     <p>
                       CONTROL ROOM <span>/</span> OVERVIEW
                     </p>
-                    <h3>Welcome back.</h3>
-                    <small>Your Axex workspace at a glance.</small>
+                    <h3>Your server, at a glance.</h3>
+                    <small>A sample of the Axex control room.</small>
                   </div>
                   <span className="preview-live-icon">
                     <ShieldCheck size={17} />
@@ -305,29 +324,29 @@ function LandingPage() {
                 <div className="preview-stat-grid">
                   <div className="preview-stat">
                     <Server size={16} />
-                    <strong>06</strong>
-                    <small>Servers</small>
+                    <strong>Servers</strong>
+                    <small>Connected communities</small>
+                  </div>
+                  <div className="preview-stat preview-stat-green">
+                    <UsersRound size={16} />
+                    <strong>Admins</strong>
+                    <small>Trusted dashboard access</small>
                   </div>
                   <div className="preview-stat">
-                    <CheckCircle2 size={16} />
-                    <strong>99.9%</strong>
-                    <small>Uptime</small>
+                    <ShieldCheck size={16} />
+                    <strong>Verification</strong>
+                    <small>Coming soon</small>
                   </div>
-                  <div className="preview-stat">
-                    <Activity size={16} />
-                    <strong>24.7K</strong>
-                    <small>Events</small>
-                  </div>
-                  <div className="preview-stat">
-                    <Users size={16} />
-                    <strong>12.3K</strong>
-                    <small>Members</small>
+                  <div className="preview-stat preview-stat-green">
+                    <FileClock size={16} />
+                    <strong>Audit log</strong>
+                    <small>Access change history</small>
                   </div>
                 </div>
                 <div className="preview-chart-card">
                   <div className="preview-chart-heading">
-                    <span>ACTIVITY OVERVIEW</span>
-                    <span>LAST 7 DAYS</span>
+                    <span>VERIFICATION ACTIVITY</span>
+                    <span>ILLUSTRATIVE TREND</span>
                   </div>
                   <svg
                     className="preview-chart"
@@ -360,29 +379,21 @@ function LandingPage() {
                   </svg>
                   <div className="preview-chart-footer">
                     <span>
-                      <i /> Axex bot online
+                      <i /> Example activity
                     </span>
-                    <span>Sample interface preview</span>
-                  </div>
-                  <div className="preview-figure" aria-hidden="true">
-                    <div className="figure-orbit" />
-                    <div className="figure-hood" />
-                    <div className="figure-head" />
-                    <div className="figure-body">
-                      <span>A</span>
-                    </div>
+                    <span>Not live server data</span>
                   </div>
                 </div>
                 <div className="preview-bottomline">
                   <span>
-                    <Sparkles size={13} /> A clearer view of your community
+                    <Sparkles size={13} /> Your security workspace, made clearer
                   </span>
                   <span>AXEX CONTROL</span>
                 </div>
               </div>
             </div>
             <div className="preview-caption">
-              <span /> Illustrative dashboard preview <i>•</i> Sample data
+              <span /> Illustrative interface <i>•</i> No live server metrics
             </div>
           </div>
         </section>
