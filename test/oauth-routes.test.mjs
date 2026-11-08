@@ -74,6 +74,20 @@ test("OAuth callback fetches identity and manageable guilds, stores both, then d
           owner: true,
           permissions: "8",
         },
+        {
+          id: "300000000000000002",
+          name: "Numeric permissions server",
+          icon: null,
+          owner: false,
+          permissions: 32,
+        },
+        {
+          id: "300000000000000003",
+          name: "Nullable permissions server",
+          icon: null,
+          owner: false,
+          permissions: null,
+        },
       ]);
     }
 
@@ -104,8 +118,8 @@ test("OAuth callback fetches identity and manageable guilds, stores both, then d
     calls.map((call) => call.url),
     [
       "https://discord.com/api/oauth2/token",
-      "https://discord.com/api/users/@me",
-      "https://discord.com/api/users/@me/guilds",
+      "https://discord.com/api/v10/users/@me",
+      "https://discord.com/api/v10/users/@me/guilds",
     ],
   );
   assert.equal(calls[1].authorization, "Bearer single-use-token");
@@ -125,6 +139,20 @@ test("OAuth callback fetches identity and manageable guilds, stores both, then d
         icon: "guild-icon",
         owner: true,
         permissions: "8",
+      },
+      {
+        id: "300000000000000002",
+        name: "Numeric permissions server",
+        icon: null,
+        owner: false,
+        permissions: "32",
+      },
+      {
+        id: "300000000000000003",
+        name: "Nullable permissions server",
+        icon: null,
+        owner: false,
+        permissions: "0",
       },
     ],
   });
