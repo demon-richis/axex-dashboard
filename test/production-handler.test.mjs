@@ -43,4 +43,49 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   for (let attempt = 0; attempt < 60; attempt += 1) {
     if (child.exitCode !== null) assert.fail(`server exited early with ${child.exitCode}`);
     try {
-   ¶»§q«^
+      response = await fetch(baseUrl);
+      if (response.status === 200) break;
+    } catch {}
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  assert.ok(response, "built server became reachable");
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /text\/html/);
+  const policy = response.headers.get("content-security-policy") ?? "";
+  const nonce = policy.match(/'nonce-([^']+)'/)?.[1];
+  assert.ok(nonce, "CSP includes a nonce");
+  const html = await response.text();
+  const scripts = [...html.matchAll(/<script\b[^>]*>/gi)].map((match) => match[0]);
+  assert.ok(scripts.length > 0, "SSR includes framework scripts");
+  assert.ok(
+    scripts.every((script) => script.includes(`nonce="${nonce}"`)),
+    "every rendered script nonce matches CSP",
+  );
+  assert.match(html, /Discord security\./);
+  assert.match(html, /Under control\./);
+  assert.match(html, /DISCORD SECURITY/);
+  assert.match(html, /id="platform"/);
+  assert.match(html, /id="security"/);
+  assert.match(html, /id="how-it-works"/);
+  assert.match(html, /id="faq"/);
+  const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
+  for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(html, /Continue with Discord/);
+  assert.match(html, /Permission-aware/);
+  assert.match(html, /PRODUCT PREVIEW/);
+  assert.match(html, /Demo data/);
+  assert.match(html, /Verification portal/);
+  assert.match(html, /Raid detection/);
+  assert.doesNotMatch(html, /99\.9%|24\.7K|12\.3K|All systems operational/);
+  assert.doesNotMatch(html, /No bot token in dashboard/);
+  assert.doesNotMatch(html, /Keep your server/);
+
+  const malformedPathResponse = await fetch(`${baseUrl}/%E0%A4%A`);
+  assert.equal(malformedPathResponse.status, 400);
+  const healthyResponse = await fetch(baseUrl);
+  assert.equal(healthyResponse.status, 200);
+
+  const pickerResponse = await fetch(`${baseUrl}/servers`, { redirect: "manual" });
+  assert.equal(pickerResponse.status, 302);
+  assert.equal(pickerResponse.headers.get("location"), "/?next=%2Fservers");
+});

@@ -31,4 +31,9 @@ const AccordionContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content ref={ref} className={cn("faq-content", className)} {...props}>
-    <div className="faq-content-inner">{children}</div>¶»§q«^
+    <div className="faq-content-inner">{children}</div>
+  </AccordionPrimitive.Content>
+));
+AccordionContent.displayName = "AccordionContent";
+
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
