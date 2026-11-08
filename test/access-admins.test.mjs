@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { isNotFound } from "@tanstack/react-router";
 import { readFile } from "node:fs/promises";
 import { after, before, test } from "node:test";
 import { PGlite } from "@electric-sql/pglite";
@@ -41,7 +42,12 @@ after(async () => {
 });
 
 const expectStatus = async (promise, status) => {
-  await assert.rejects(promise, (error) => error instanceof Response && error.status === status);
+  await assert.rejects(
+    promise,
+    (error) =>
+      (error instanceof Response && error.status === status) ||
+      (status === 404 && isNotFound(error)),
+  );
 };
 
 test("getGuildAccess enforces owner, admin, viewer, none, removed bot, and wrong guild matrix", async () => {
