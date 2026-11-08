@@ -1,3 +1,4 @@
+import { notFound, redirect } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 
 import { ensureDashboardSchema, getDb } from "./db/client.server.ts";
@@ -7,12 +8,11 @@ import { getSession } from "./session.server.ts";
 export async function requireUser(request: Request) {
   const session = getSession(request);
   if (!session) {
-    throw new Response(null, {
-      status: 302,
-      headers: {
-        Location: `/?next=${encodeURIComponent(new URL(request.url).pathname)}`,
-        "Cache-Control": "no-store",
-      },
+    throw redirect({
+      to: "/",
+      search: { next: new URL(request.url).pathname },
+      statusCode: 302,
+      headers: { "Cache-Control": "no-store" },
     });
   }
 
@@ -29,12 +29,10 @@ export async function requireUser(request: Request) {
     .limit(1);
 
   if (!user) {
-    throw new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/",
-        "Cache-Control": "no-store",
-      },
+    throw redirect({
+      to: "/",
+      statusCode: 302,
+      headers: { "Cache-Control": "no-store" },
     });
   }
 

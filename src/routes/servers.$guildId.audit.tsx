@@ -1,5 +1,5 @@
 import { LoadingSkeleton } from "../components/loading-skeleton";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { describeAuditAction, isCalendarDateString, relativeAge } from "../lib/dashboard-view.ts";
@@ -36,7 +36,7 @@ const loadAudit = createServerFn({ method: "GET" })
     const user = await requireUser(getRequest());
     await requireGuildAccess(user.userId, data.guildId);
     const guild = await getGuildDetails(data.guildId);
-    if (!guild) throw new Response("Not found", { status: 404 });
+    if (!guild) throw notFound();
     const from = data.from ? new Date(`${data.from}T00:00:00.000Z`) : undefined;
     const to = data.to ? new Date(`${data.to}T23:59:59.999Z`) : undefined;
     const rows = await listAudit({

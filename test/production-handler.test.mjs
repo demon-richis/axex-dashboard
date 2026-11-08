@@ -75,4 +75,8 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.equal(malformedPathResponse.status, 400);
   const healthyResponse = await fetch(baseUrl);
   assert.equal(healthyResponse.status, 200);
+
+  const pickerResponse = await fetch(`${baseUrl}/servers`, { redirect: "manual" });
+  assert.equal(pickerResponse.status, 302);
+  assert.equal(pickerResponse.headers.get("location"), "/?next=%2Fservers");
 });

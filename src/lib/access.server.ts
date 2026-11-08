@@ -1,3 +1,4 @@
+import { notFound } from "@tanstack/react-router";
 import { and, eq, isNull, or } from "drizzle-orm";
 
 import { getDb, type DashboardDb } from "./db/client.server.ts";
@@ -52,7 +53,7 @@ export async function requireGuildAccess(
   db?: DashboardDb,
 ): Promise<GuildAccess> {
   const access = await getGuildAccess(userId, guildId, db);
-  if (!access) throw new Response("Not found", { status: 404 });
+  if (!access) throw notFound();
   return access;
 }
 

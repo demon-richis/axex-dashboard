@@ -1,5 +1,5 @@
 import { LoadingSkeleton } from "../components/loading-skeleton";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -31,7 +31,7 @@ const loadAdmins = createServerFn({ method: "GET" })
     const user = await requireUser(getRequest());
     const access = await requireGuildAccess(user.userId, data.guildId);
     const guild = await getGuildDetails(data.guildId);
-    if (!guild) throw new Response("Not found", { status: 404 });
+    if (!guild) throw notFound();
     const admins = await listGuildAdmins(data.guildId);
     const [owner] = await getDb()
       .select({

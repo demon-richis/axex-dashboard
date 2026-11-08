@@ -1,5 +1,5 @@
 import { LoadingSkeleton } from "../components/loading-skeleton";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { Overview } from "../components/overview";
@@ -24,7 +24,7 @@ const loadOverview = createServerFn({ method: "GET" })
     const user = await requireUser(getRequest());
     const access = await requireGuildAccess(user.userId, data.guildId);
     const guild = await getGuildDetails(data.guildId);
-    if (!guild) throw new Response("Not found", { status: 404 });
+    if (!guild) throw notFound();
     const [stats, trend, activityRows] = await Promise.all([
       getVerificationStats(data.guildId),
       getVerificationTrend(data.guildId),

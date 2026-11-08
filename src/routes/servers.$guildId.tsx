@@ -25,7 +25,7 @@ const loadGuildShell = createServerFn({ method: "GET" })
     const user = await requireUser(request);
     const access = await requireGuildAccess(user.userId, data.guildId);
     const guild = await getGuildDetails(data.guildId);
-    if (!guild) throw new Response("Not found", { status: 404 });
+    if (!guild) throw notFound();
     const servers = await listAccessibleGuilds(user.userId);
     const shellGuild: ShellGuild = {
       guildId: guild.guildId,
