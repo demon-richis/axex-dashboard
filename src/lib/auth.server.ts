@@ -18,10 +18,13 @@ const discordGuildSchema = z.object({
   name: z.string().min(1).max(100),
   icon: z.string().max(128).nullable().optional(),
   owner: z.boolean().optional().default(false),
-  permissions: z.union([
-    z.string().regex(/^\d+$/),
-    z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).transform(String),
-  ]).nullish().transform((value) => value ?? "0"),
+  permissions: z
+    .union([
+      z.string().regex(/^\d+$/),
+      z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).transform(String),
+    ])
+    .nullish()
+    .transform((value) => value ?? "0"),
 });
 
 function parseDiscordPayload<Schema extends z.ZodTypeAny>(
