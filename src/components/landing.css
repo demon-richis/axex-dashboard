@@ -509,3 +509,246 @@
     animation-iteration-count:1!important; transition-duration:.01ms!important;
   }
 }
+/* shadcn-style primitives: compact, accessible landing-page controls. */
+.landing-ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.landing-ui-button:focus-visible,
+.landing-mobile-links a:focus-visible,
+.faq-trigger:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 4px;
+}
+
+.landing-mobile-overlay {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  background: rgba(4, 3, 3, 0.72);
+  backdrop-filter: blur(8px);
+  animation: axex-overlay-in 160ms ease-out;
+}
+
+.landing-mobile-dialog {
+  position: fixed;
+  z-index: 81;
+  top: 78px;
+  right: 16px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 17px;
+  border: 1px solid var(--lp-border);
+  border-radius: 15px;
+  background: rgba(20, 16, 15, 0.98);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.58);
+  outline: none;
+  animation: axex-menu-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.landing-mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 2px 15px;
+  border-bottom: 1px solid var(--lp-line);
+  color: #f7f3f0;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
+.landing-mobile-brand .landing-brand-mark {
+  width: 33px;
+  height: 33px;
+  border-radius: 9px;
+  font-size: 11px;
+}
+
+.landing-mobile-brand > span:last-child {
+  margin-left: auto;
+  color: var(--lp-muted);
+  font-size: 8px;
+}
+
+.landing-mobile-links {
+  display: grid;
+  gap: 5px;
+  padding-top: 12px;
+}
+
+.landing-mobile-links a {
+  display: flex;
+  min-height: 45px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #e9e2de;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.landing-mobile-links a:hover {
+  border-color: var(--lp-border);
+  background: rgba(255, 255, 255, 0.035);
+  color: #bef264;
+}
+
+.landing-mobile-links .mobile-dashboard-link {
+  margin-top: 5px;
+  border-color: rgba(132, 204, 22, 0.25);
+  background: rgba(132, 204, 22, 0.08);
+  color: #bef264;
+}
+
+.faq-accordion {
+  display: grid;
+  align-content: start;
+  gap: 0;
+  min-width: 0;
+  border-top: 1px solid var(--lp-line);
+}
+
+.faq-item {
+  border: 0;
+  border-bottom: 1px solid var(--lp-line);
+}
+
+.faq-item-header {
+  margin: 0;
+}
+
+.faq-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 66px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 2px;
+  border: 0;
+  background: transparent;
+  color: #f3eeeb;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.faq-trigger:hover {
+  color: #bef264;
+}
+
+.faq-chevron {
+  flex: none;
+  color: var(--lp-green);
+  transition: transform 180ms ease;
+}
+
+.faq-trigger[data-state="open"] .faq-chevron {
+  transform: rotate(180deg);
+}
+
+.faq-content {
+  overflow: hidden;
+  color: var(--lp-muted);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.faq-content[data-state="open"] {
+  animation: axex-faq-open 180ms ease-out;
+}
+
+.faq-content[data-state="closed"] {
+  animation: axex-faq-close 150ms ease-in;
+}
+
+.faq-content-inner {
+  padding: 0 28px 17px 2px;
+}
+
+.faq-content p {
+  margin: 0;
+}
+
+@keyframes axex-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes axex-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-7px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes axex-faq-open {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes axex-faq-close {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .landing-mobile-dialog {
+    top: 76px;
+    right: 12px;
+    width: calc(100vw - 24px);
+  }
+
+  .faq-trigger {
+    min-height: 57px;
+    font-size: 11px;
+  }
+
+  .faq-content {
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-mobile-overlay,
+  .landing-mobile-dialog,
+  .faq-content[data-state="open"],
+  .faq-content[data-state="closed"] {
+    animation: none;
+  }
+
+  .faq-chevron {
+    transition: none;
+  }
+}

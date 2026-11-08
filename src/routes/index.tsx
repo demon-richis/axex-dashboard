@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { MotionConfig, motion } from "framer-motion";
 import {
   Activity,
   ArrowRight,
@@ -8,7 +9,6 @@ import {
   Bot,
   Check,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   FileClock,
   Fingerprint,
@@ -24,6 +24,21 @@ import {
   X,
 } from "lucide-react";
 import { LoadingSkeleton } from "../components/loading-skeleton";
+import { Button } from "../components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../components/ui/accordion";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
 import "../components/dashboard.css";
 import "../components/landing.css";
 
@@ -34,6 +49,7 @@ const loadLanding = createServerFn({ method: "GET" }).handler(async () => {
   ]);
   const request = getRequest();
   const search = new URL(request.url).searchParams;
+
   return {
     signedIn: Boolean(getSession(request)),
     connected: search.get("connected") === "1",
@@ -48,16 +64,15 @@ export const Route = createFileRoute("/")({
   loader: () => loadLanding(),
   head: () => ({
     meta: [
-      { title: "Axex — Discord Security Control Platform" },
+      { title: "Axex — Discord Security" },
       {
         name: "description",
-        content:
-          "Protect and manage your Discord communities with Axex: server operations, member verification, raid awareness, and permission-aware administration.",
+        content: "Discord security, verification and server controls in one dashboard.",
       },
-      { property: "og:title", content: "Axex — Discord Security Control Platform" },
+      { property: "og:title", content: "Axex — Discord Security" },
       {
         property: "og:description",
-        content: "One connected control plane for your Discord security and server operations.",
+        content: "One dashboard for your Discord security.",
       },
     ],
   }),
@@ -68,11 +83,10 @@ const capabilities = [
   {
     icon: Server,
     number: "01",
-    title: "Server operations",
-    tag: "CONTROL",
+    title: "Server management",
+    tag: "SERVER OPS",
     tone: "red",
-    description:
-      "Keep connected communities in one workspace. Move between servers and reach the controls that matter.",
+    description: "Every connected server, one workspace.",
   },
   {
     icon: Fingerprint,
@@ -80,26 +94,23 @@ const capabilities = [
     title: "Member verification",
     tag: "IDENTITY",
     tone: "green",
-    description:
-      "Connect members to a structured verification flow before they receive access to your community.",
+    description: "Verify members before they get access.",
   },
   {
     icon: Radar,
     number: "03",
-    title: "Raid awareness",
-    tag: "DETECTION",
+    title: "Raid detection",
+    tag: "THREAT SIGNALS",
     tone: "amber",
-    description:
-      "Watch join patterns and surface unusual bursts with raid-aware signals for your server team.",
+    description: "Spot unusual join activity early.",
   },
   {
     icon: UsersRound,
     number: "04",
-    title: "Access and audit",
+    title: "Admin & audit",
     tag: "GOVERNANCE",
     tone: "green",
-    description:
-      "Keep dashboard access permission-aware, with admin management and a history of important changes.",
+    description: "Control access. Review changes.",
   },
 ];
 
@@ -107,23 +118,23 @@ const surfaces = [
   {
     icon: Bot,
     title: "Axex bot",
-    label: "INSIDE DISCORD",
+    label: "DISCORD",
     tone: "red",
-    description: "Security workflows and server operations where your community already lives.",
+    description: "Protection inside your server.",
   },
   {
     icon: LayoutDashboard,
     title: "Web dashboard",
-    label: "CONTROL PLANE",
+    label: "CONTROL",
     tone: "green",
-    description: "A focused workspace for connected servers, administrators, and audit history.",
+    description: "Server controls in one place.",
   },
   {
     icon: Fingerprint,
     title: "Verification portal",
-    label: "MEMBER EXPERIENCE",
+    label: "MEMBERS",
     tone: "amber",
-    description: "A dedicated verification experience connected to your Discord server workflow.",
+    description: "A clean member check-in.",
   },
 ];
 
@@ -131,46 +142,70 @@ const steps = [
   {
     number: "01",
     icon: LockKeyhole,
-    title: "Connect your Discord",
-    description:
-      "Sign in with Discord. Axex uses your authorised identity to determine which servers you can manage.",
+    title: "Sign in",
+    description: "Use your Discord account.",
   },
   {
     number: "02",
     icon: Network,
-    title: "Choose a community",
-    description:
-      "Open a server where Axex is already installed, or add the bot to a new community.",
+    title: "Connect a server",
+    description: "Add Axex to your server.",
   },
   {
     number: "03",
     icon: SlidersHorizontal,
-    title: "Manage with clarity",
-    description:
-      "Use available server controls, manage dashboard access, and review important changes.",
+    title: "Take control",
+    description: "Open your workspace.",
   },
 ];
 
 const faqs = [
   {
     question: "What is Axex?",
-    answer:
-      "Axex is a Discord security platform that connects a Discord bot, a web dashboard, and a dedicated verification experience for server operators.",
+    answer: "A Discord security platform with a bot, dashboard and verification portal.",
   },
   {
-    question: "Do I need to install the Axex bot?",
-    answer:
-      "Yes. Add Axex to the Discord server you want to manage. Servers where the bot is already installed appear in your connected server list when your Discord permissions allow access.",
+    question: "Does it replace Discord?",
+    answer: "No. Axex works alongside Discord.",
   },
   {
-    question: "Who can access a server dashboard?",
-    answer:
-      "Access is checked against your Discord identity and the server-level permissions configured for the dashboard. You only see server workspaces you are authorised to manage.",
+    question: "Who can access my dashboard?",
+    answer: "Access follows your Discord permissions.",
   },
   {
-    question: "Does the dashboard replace Discord?",
-    answer:
-      "No. Axex complements Discord. The bot handles server-side workflows, while the dashboard provides a dedicated place for supported management and audit tasks.",
+    question: "Do I need the bot?",
+    answer: "Yes. Add Axex to each server you manage.",
+  },
+];
+
+const previewModules = [
+  {
+    icon: Server,
+    title: "Server ops",
+    detail: "Connected servers",
+    state: "Managed",
+    tone: "red",
+  },
+  {
+    icon: UsersRound,
+    title: "Admin access",
+    detail: "Role permissions",
+    state: "Controlled",
+    tone: "green",
+  },
+  {
+    icon: Fingerprint,
+    title: "Verification",
+    detail: "Member checks",
+    state: "Portal-linked",
+    tone: "amber",
+  },
+  {
+    icon: FileClock,
+    title: "Audit log",
+    detail: "Recent changes",
+    state: "Tracked",
+    tone: "green",
   },
 ];
 
@@ -194,462 +229,505 @@ function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const authHref = signedIn ? "/api/auth/discord?consent=1" : "/api/auth/discord";
   const signInLabel = signedIn ? "Reconnect Discord" : "Sign in with Discord";
-  const primaryLabel = signedIn ? "Open dashboard" : "Get started with Discord";
-  const closeMenu = () => setMenuOpen(false);
+  const primaryLabel = signedIn ? "Open dashboard" : "Continue with Discord";
 
   let notice = "";
-  if (connected) notice = "Discord access updated. Your server list is ready.";
-  else if (error === "permissions")
-    notice = "Server access was not approved. Reconnect Discord and approve the requested access.";
-  else if (error === "state") notice = "Your sign-in session expired. Please try again.";
-  else if (error) notice = "Discord sign-in did not finish. Please try again.";
+  if (connected) notice = "Discord connected. Your servers are ready.";
+  else if (error === "permissions") notice = "Server access denied. Try reconnecting.";
+  else if (error === "state") notice = "Session expired. Sign in again.";
+  else if (error) notice = "Discord sign-in failed. Try again.";
 
   return (
-    <div className="landing-page" id="home">
-      <a className="skip-link" href="#main-content">
-        Skip to content
-      </a>
-      <div className="landing-ambient landing-ambient-red" aria-hidden="true" />
-      <div className="landing-ambient landing-ambient-green" aria-hidden="true" />
-
-      <header className="landing-header">
-        <a className="landing-brand" href="/" aria-label="Axex home" onClick={closeMenu}>
-          <span className="landing-brand-mark">AX</span>
-          <span className="landing-brand-copy">
-            <strong>AXEX</strong>
-            <i />
-            <span>SECURITY PLATFORM</span>
-          </span>
+    <MotionConfig reducedMotion="user">
+      <div className="landing-page" id="home">
+        <a className="skip-link" href="#main-content">
+          Skip to content
         </a>
-        <nav
-          id="landing-navigation"
-          className={menuOpen ? "landing-nav landing-nav-open" : "landing-nav"}
-          aria-label="Main navigation"
-        >
-          <a href="#platform" onClick={closeMenu}>
-            Platform
-          </a>
-          <a href="#security" onClick={closeMenu}>
-            Security
-          </a>
-          <a href="#how-it-works" onClick={closeMenu}>
-            How it works
-          </a>
-          <a href="#faq" onClick={closeMenu}>
-            FAQ
-          </a>
-          {signedIn && (
-            <a className="landing-mobile-dashboard" href="/servers" onClick={closeMenu}>
-              Open dashboard <ArrowUpRight size={15} />
-            </a>
-          )}
-        </nav>
-        <div className="landing-header-actions">
-          {signedIn && (
-            <a className="landing-dashboard-link" href="/servers">
-              Dashboard <ArrowUpRight size={14} />
-            </a>
-          )}
-          <a className="landing-header-cta" href={authHref} aria-label={signInLabel}>
-            <DiscordMark size={17} />
-            <span>{signInLabel}</span>
-            <ArrowRight size={15} />
-          </a>
-          <button
-            className="landing-menu-button"
-            type="button"
-            aria-label={menuOpen ? "Close navigation" : "Open navigation"}
-            aria-expanded={menuOpen}
-            aria-controls="landing-navigation"
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            {menuOpen ? <X size={19} /> : <Menu size={19} />}
-          </button>
-        </div>
-      </header>
+        <div className="landing-ambient landing-ambient-red" aria-hidden="true" />
+        <div className="landing-ambient landing-ambient-green" aria-hidden="true" />
 
-      <main id="main-content">
-        <section className="landing-hero" aria-labelledby="hero-title">
-          <div className="landing-hero-copy">
-            <div className="hero-eyebrow">
-              <span className="hero-eyebrow-icon">
-                <ShieldCheck size={15} />
-              </span>
-              <span>DISCORD SECURITY CONTROL PLANE</span>
-              <span className="hero-security-label">
-                <CheckCircle2 size={13} /> Permission-aware
-              </span>
-            </div>
-            <h1 id="hero-title">
-              Discord security.<span> Under control.</span>
-            </h1>
-            <p className="hero-lede">
-              Protect your community. Manage every server from one secure control room.
-            </p>
-            <p className="hero-description">
-              Axex connects server operations, member verification, raid awareness, and
-              permission-aware administration in one focused platform.
-            </p>
-            {notice && (
-              <p className={connected ? "landing-notice success" : "landing-notice"} role="status">
-                {connected && <CheckCircle2 size={16} />}
-                {notice}
-              </p>
+        <header className="landing-header">
+          <a className="landing-brand" href="/" aria-label="Axex home">
+            <span className="landing-brand-mark">AX</span>
+            <span className="landing-brand-copy">
+              <strong>AXEX</strong>
+              <i />
+              <span>SECURITY</span>
+            </span>
+          </a>
+
+          <nav className="landing-nav" aria-label="Main navigation">
+            <a href="#platform">Platform</a>
+            <a href="#security">Protection</a>
+            <a href="#how-it-works">Setup</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+
+          <div className="landing-header-actions">
+            {signedIn && (
+              <a className="landing-dashboard-link" href="/servers">
+                Dashboard <ArrowUpRight size={14} />
+              </a>
             )}
-            <div className="landing-actions">
-              <a className="landing-primary-button" href={signedIn ? "/servers" : authHref}>
+            <Button asChild variant="secondary" className="landing-header-cta">
+              <a href={authHref} aria-label={signInLabel}>
                 <DiscordMark size={17} />
-                <span>{primaryLabel}</span>
-                <ArrowRight size={17} />
+                <span>{signInLabel}</span>
+                <ArrowRight size={15} />
               </a>
-              <a className="landing-secondary-button" href="#platform">
-                <span>Explore the platform</span>
-                <ArrowUpRight size={17} />
-              </a>
-            </div>
-            <div className="landing-assurance">
-              <span>
-                <Check size={13} /> Discord-native workflows
-              </span>
-              <b />
-              <span>
-                <Check size={13} /> Role-aware access
-              </span>
-              <b />
-              <span>
-                <Check size={13} /> Server-level control
-              </span>
-            </div>
-          </div>
+            </Button>
 
-          <div className="landing-hero-visual" aria-label="Illustrative Axex control plane preview">
-            <div className="preview-orbit preview-orbit-one" aria-hidden="true" />
-            <div className="preview-orbit preview-orbit-two" aria-hidden="true" />
-            <div className="preview-window">
-              <div className="preview-window-bar">
-                <div className="preview-product-brand">
-                  <span className="preview-product-mark">AX</span>
-                  <span>
-                    AXEX <i>/</i> CONTROL
-                  </span>
+            <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
+              <DialogTrigger asChild>
+                <button
+                  className="landing-menu-button"
+                  type="button"
+                  aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+                  aria-expanded={menuOpen}
+                >
+                  {menuOpen ? <X size={19} /> : <Menu size={19} />}
+                </button>
+              </DialogTrigger>
+              <DialogContent className="landing-mobile-dialog">
+                <DialogTitle className="sr-only">Axex navigation</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Navigate the Axex security platform.
+                </DialogDescription>
+                <div className="landing-mobile-brand">
+                  <span className="landing-brand-mark">AX</span>
+                  <strong>AXEX</strong>
+                  <span>SECURITY</span>
                 </div>
-                <span className="preview-demo-label">
-                  <i /> PRODUCT PREVIEW
+                <nav className="landing-mobile-links" aria-label="Mobile navigation">
+                  <DialogClose asChild>
+                    <a href="#platform">
+                      Platform <ArrowUpRight size={15} />
+                    </a>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <a href="#security">
+                      Protection <ArrowUpRight size={15} />
+                    </a>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <a href="#how-it-works">
+                      Setup <ArrowUpRight size={15} />
+                    </a>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <a href="#faq">
+                      FAQ <ArrowUpRight size={15} />
+                    </a>
+                  </DialogClose>
+                  {signedIn && (
+                    <DialogClose asChild>
+                      <a href="/servers" className="mobile-dashboard-link">
+                        Open dashboard <ArrowRight size={15} />
+                      </a>
+                    </DialogClose>
+                  )}
+                </nav>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </header>
+
+        <main id="main-content">
+          <section className="landing-hero" aria-labelledby="hero-title">
+            <motion.div
+              className="landing-hero-copy"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.58, ease: "easeOut" }}
+            >
+              <div className="hero-eyebrow">
+                <span className="hero-eyebrow-icon">
+                  <ShieldCheck size={15} />
+                </span>
+                <span>DISCORD SECURITY</span>
+                <span className="hero-security-label">
+                  <CheckCircle2 size={13} /> Permission-aware
                 </span>
               </div>
-              <div className="preview-content">
-                <aside className="preview-sidebar">
-                  <span className="preview-sidebar-label">WORKSPACE</span>
-                  <div className="preview-side-item active">
-                    <LayoutDashboard size={15} /> Overview
-                  </div>
-                  <div className="preview-side-item">
-                    <Server size={15} /> Servers
-                  </div>
-                  <div className="preview-side-item">
-                    <UsersRound size={15} /> Admins
-                  </div>
-                  <div className="preview-side-item">
-                    <FileClock size={15} /> Audit log
-                  </div>
-                  <div className="preview-sidebar-bottom">
-                    <span className="preview-avatar">AX</span>
+              <h1 id="hero-title">
+                Discord security.<span> Under control.</span>
+              </h1>
+              <p className="hero-lede">One dashboard. Every server.</p>
+              <p className="hero-description">Manage access, verification and security signals.</p>
+              {notice && (
+                <p
+                  className={connected ? "landing-notice success" : "landing-notice"}
+                  role="status"
+                >
+                  {connected && <CheckCircle2 size={16} />}
+                  {notice}
+                </p>
+              )}
+              <div className="landing-actions">
+                <Button asChild variant="primary">
+                  <a href={signedIn ? "/servers" : authHref}>
+                    <DiscordMark size={17} />
+                    <span>{primaryLabel}</span>
+                    <ArrowRight size={17} />
+                  </a>
+                </Button>
+                <Button asChild variant="secondary">
+                  <a href="#platform">
+                    <span>Explore features</span>
+                    <ArrowUpRight size={17} />
+                  </a>
+                </Button>
+              </div>
+              <div className="landing-assurance">
+                <span>
+                  <Check size={13} /> Role-aware access
+                </span>
+                <b />
+                <span>
+                  <Check size={13} /> Raid detection
+                </span>
+                <b />
+                <span>
+                  <Check size={13} /> Audit trail
+                </span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="landing-hero-visual"
+              role="img"
+              aria-label="Illustrative Axex control dashboard preview"
+              initial={{ opacity: 0, y: 22, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.68, delay: 0.12, ease: "easeOut" }}
+            >
+              <div className="preview-orbit preview-orbit-one" aria-hidden="true" />
+              <div className="preview-orbit preview-orbit-two" aria-hidden="true" />
+              <div className="preview-window">
+                <div className="preview-window-bar">
+                  <div className="preview-product-brand">
+                    <span className="preview-product-mark">AX</span>
                     <span>
-                      <strong>Server workspace</strong>
-                      <small>Role-aware access</small>
+                      AXEX <i>/</i> CONTROL
                     </span>
                   </div>
-                </aside>
-                <div className="preview-main">
-                  <div className="preview-main-top">
-                    <span>
-                      WORKSPACE <i>/</i> OVERVIEW
-                    </span>
-                    <span className="preview-access">
-                      <LockKeyhole size={11} /> ACCESS CONTROLLED
-                    </span>
-                  </div>
-                  <div className="preview-greeting">
-                    <div>
-                      <span className="preview-kicker">SECURITY CONTROL PLANE</span>
-                      <h3>Your servers. One view.</h3>
-                      <p>A clearer picture of the tools available to your team.</p>
+                  <span className="preview-demo-label">
+                    <i /> PRODUCT PREVIEW
+                  </span>
+                </div>
+
+                <div className="preview-content">
+                  <aside className="preview-sidebar" aria-hidden="true">
+                    <span className="preview-sidebar-label">WORKSPACE</span>
+                    <div className="preview-side-item active">
+                      <LayoutDashboard size={15} /> Overview
                     </div>
-                    <div className="preview-shield">
-                      <ShieldCheck size={23} />
+                    <div className="preview-side-item">
+                      <Server size={15} /> Servers
                     </div>
-                  </div>
-                  <div className="preview-module-grid">
-                    <div className="preview-module">
-                      <span className="preview-module-icon red">
-                        <Server size={16} />
-                      </span>
-                      <strong>Server operations</strong>
-                      <small>Connected communities</small>
-                      <span className="preview-module-state">
-                        <i /> Workspace
-                      </span>
+                    <div className="preview-side-item">
+                      <UsersRound size={15} /> Admins
                     </div>
-                    <div className="preview-module">
-                      <span className="preview-module-icon green">
-                        <UsersRound size={16} />
-                      </span>
-                      <strong>Admin access</strong>
-                      <small>Role-aware permissions</small>
-                      <span className="preview-module-state green">
-                        <i /> Managed access
-                      </span>
+                    <div className="preview-side-item">
+                      <FileClock size={15} /> Audit log
                     </div>
-                    <div className="preview-module">
-                      <span className="preview-module-icon amber">
-                        <Fingerprint size={16} />
-                      </span>
-                      <strong>Verification</strong>
-                      <small>Member onboarding flow</small>
-                      <span className="preview-module-state amber">
-                        <i /> Portal-linked
-                      </span>
-                    </div>
-                    <div className="preview-module">
-                      <span className="preview-module-icon green">
-                        <FileClock size={16} />
-                      </span>
-                      <strong>Audit history</strong>
-                      <small>Important admin changes</small>
-                      <span className="preview-module-state green">
-                        <i /> Traceable
-                      </span>
-                    </div>
-                  </div>
-                  <div className="preview-security-card">
-                    <div className="preview-security-heading">
+                    <div className="preview-sidebar-bottom">
+                      <span className="preview-avatar">AX</span>
                       <span>
-                        <Activity size={14} /> SERVER SECURITY WORKFLOW
+                        <strong>Workspace</strong>
+                        <small>Access controlled</small>
                       </span>
-                      <span>ILLUSTRATIVE</span>
                     </div>
-                    <div className="preview-flow">
-                      <div className="preview-flow-node">
-                        <span className="preview-flow-icon">
-                          <Server size={16} />
-                        </span>
-                        <span>
-                          <strong>Discord server</strong>
-                          <small>Community activity</small>
-                        </span>
+                  </aside>
+
+                  <div className="preview-main">
+                    <div className="preview-main-top">
+                      <span>
+                        WORKSPACE <i>/</i> OVERVIEW
+                      </span>
+                      <span className="preview-access">
+                        <LockKeyhole size={11} /> ACCESS CONTROLLED
+                      </span>
+                    </div>
+                    <div className="preview-greeting">
+                      <div>
+                        <span className="preview-kicker">SECURITY OVERVIEW</span>
+                        <h3>All servers. One view.</h3>
+                        <p>Your security at a glance.</p>
                       </div>
-                      <ChevronRight size={16} />
-                      <div className="preview-flow-node">
-                        <span className="preview-flow-icon red">
-                          <ShieldCheck size={16} />
-                        </span>
-                        <span>
-                          <strong>Axex security</strong>
-                          <small>Signals and workflows</small>
-                        </span>
+                      <div className="preview-shield">
+                        <ShieldCheck size={23} />
                       </div>
-                      <ChevronRight size={16} />
-                      <div className="preview-flow-node">
-                        <span className="preview-flow-icon green">
-                          <LayoutDashboard size={16} />
-                        </span>
+                    </div>
+
+                    <div className="preview-module-grid">
+                      {previewModules.map((module) => {
+                        const Icon = module.icon;
+                        return (
+                          <div className="preview-module" key={module.title}>
+                            <span className={"preview-module-icon " + module.tone}>
+                              <Icon size={16} />
+                            </span>
+                            <strong>{module.title}</strong>
+                            <small>{module.detail}</small>
+                            <span className={"preview-module-state " + module.tone}>
+                              <i /> {module.state}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="preview-security-card">
+                      <div className="preview-security-heading">
                         <span>
-                          <strong>Control plane</strong>
-                          <small>Team visibility</small>
+                          <Activity size={14} /> SECURITY FLOW
                         </span>
+                        <span>ILLUSTRATIVE</span>
+                      </div>
+                      <div className="preview-flow">
+                        <div className="preview-flow-node">
+                          <span className="preview-flow-icon">
+                            <Server size={16} />
+                          </span>
+                          <span>
+                            <strong>Discord</strong>
+                            <small>Server activity</small>
+                          </span>
+                        </div>
+                        <ChevronRight size={16} />
+                        <div className="preview-flow-node">
+                          <span className="preview-flow-icon red">
+                            <ShieldCheck size={16} />
+                          </span>
+                          <span>
+                            <strong>Axex</strong>
+                            <small>Security layer</small>
+                          </span>
+                        </div>
+                        <ChevronRight size={16} />
+                        <div className="preview-flow-node">
+                          <span className="preview-flow-icon green">
+                            <LayoutDashboard size={16} />
+                          </span>
+                          <span>
+                            <strong>Dashboard</strong>
+                            <small>Control panel</small>
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="preview-caption">
-              <span /> Illustrative product interface <i>·</i> Not live server data
-            </div>
-          </div>
-        </section>
+              <div className="preview-caption">
+                <span /> Product preview <i>·</i> Demo data
+              </div>
+            </motion.div>
+          </section>
 
-        <section className="landing-trust-strip" aria-label="Platform principles">
-          <span>BUILT FOR DISCORD OPERATORS</span>
-          <i />
-          <span>
-            <LockKeyhole size={14} /> Permission-aware
-          </span>
-          <i />
-          <span>
-            <ShieldCheck size={14} /> Security focused
-          </span>
-          <i />
-          <span>
-            <FileClock size={14} /> Audit conscious
-          </span>
-        </section>
-
-        <section
-          className="landing-section landing-platform"
-          id="platform"
-          aria-labelledby="platform-title"
-        >
-          <div className="section-heading">
-            <span className="section-eyebrow">
-              <i /> THE AXEX PLATFORM
+          <section className="landing-trust-strip" aria-label="Platform principles">
+            <span>MADE FOR SERVER ADMINS</span>
+            <i />
+            <span>
+              <LockKeyhole size={14} /> Permission-aware
             </span>
-            <h2 id="platform-title">
-              The tools behind a <em>safer community.</em>
-            </h2>
-            <p>Security operations should feel connected, understandable, and easy to manage.</p>
-          </div>
-          <div className="capability-grid">
-            {capabilities.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <article className="capability-card" key={feature.number}>
-                  <div className="capability-card-top">
-                    <span className={"capability-icon " + feature.tone}>
+            <i />
+            <span>
+              <ShieldCheck size={14} /> Security-first
+            </span>
+            <i />
+            <span>
+              <FileClock size={14} /> Audit-ready
+            </span>
+          </section>
+
+          <motion.section
+            className="landing-section landing-platform"
+            id="platform"
+            aria-labelledby="platform-title"
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ duration: 0.48, ease: "easeOut" }}
+          >
+            <div className="section-heading">
+              <span className="section-eyebrow">
+                <i /> THE PLATFORM
+              </span>
+              <h2 id="platform-title">
+                All your security. <em>One place.</em>
+              </h2>
+              <p>The essentials, without the clutter.</p>
+            </div>
+            <div className="capability-grid">
+              {capabilities.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <motion.article
+                    className="capability-card"
+                    key={feature.number}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{ duration: 0.42, delay: index * 0.07, ease: "easeOut" }}
+                  >
+                    <div className="capability-card-top">
+                      <span className={"capability-icon " + feature.tone}>
+                        <Icon size={21} />
+                      </span>
+                      <span className="capability-number">{feature.number}</span>
+                    </div>
+                    <span className="capability-tag">{feature.tag}</span>
+                    <h3>{feature.title}</h3>
+                    <p>{feature.description}</p>
+                    <span className="capability-rule" />
+                  </motion.article>
+                );
+              })}
+            </div>
+          </motion.section>
+
+          <motion.section
+            className="landing-ecosystem"
+            id="security"
+            aria-labelledby="ecosystem-title"
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.14 }}
+            transition={{ duration: 0.48, ease: "easeOut" }}
+          >
+            <div className="ecosystem-copy">
+              <span className="section-eyebrow">
+                <i /> CONNECTED TOGETHER
+              </span>
+              <h2 id="ecosystem-title">
+                One system. <em>Three surfaces.</em>
+              </h2>
+              <p>Bot, dashboard, portal. Working together.</p>
+              <a className="text-link" href={signedIn ? "/servers" : authHref}>
+                {signedIn ? "Open dashboard" : "Connect Discord"} <ArrowUpRight size={15} />
+              </a>
+            </div>
+            <div className="ecosystem-stack">
+              {surfaces.map((surface) => {
+                const Icon = surface.icon;
+                return (
+                  <article className="ecosystem-card" key={surface.title}>
+                    <span className={"ecosystem-icon " + surface.tone}>
                       <Icon size={21} />
                     </span>
-                    <span className="capability-number">{feature.number}</span>
-                  </div>
-                  <span className="capability-tag">{feature.tag}</span>
-                  <h3>{feature.title}</h3>
-                  <p>{feature.description}</p>
-                  <span className="capability-rule" />
-                </article>
-              );
-            })}
-          </div>
-        </section>
+                    <div className="ecosystem-card-copy">
+                      <span>{surface.label}</span>
+                      <h3>{surface.title}</h3>
+                      <p>{surface.description}</p>
+                    </div>
+                    <ArrowUpRight size={17} />
+                  </article>
+                );
+              })}
+            </div>
+          </motion.section>
 
-        <section className="landing-ecosystem" id="security" aria-labelledby="ecosystem-title">
-          <div className="ecosystem-copy">
-            <span className="section-eyebrow">
-              <i /> ONE CONNECTED ECOSYSTEM
-            </span>
-            <h2 id="ecosystem-title">
-              Discord is where your community lives. <em>Axex connects the control.</em>
-            </h2>
-            <p>
-              The bot, the dashboard, and the verification experience each have a clear role.
-              Together, they give server teams a more organised way to operate.
-            </p>
-            <a className="text-link" href="#how-it-works">
-              See how it works <ArrowRight size={16} />
-            </a>
-          </div>
-          <div className="ecosystem-stack">
-            {surfaces.map((surface, index) => {
-              const Icon = surface.icon;
-              return (
-                <article
-                  className={"ecosystem-card ecosystem-card-" + surface.tone}
-                  key={surface.title}
-                >
-                  <span className="ecosystem-icon">
-                    <Icon size={22} />
-                  </span>
-                  <div className="ecosystem-card-copy">
-                    <span>{surface.label}</span>
-                    <h3>{surface.title}</h3>
-                    <p>{surface.description}</p>
-                  </div>
-                  <span className="ecosystem-index">0{index + 1}</span>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section
-          className="landing-section landing-workflow"
-          id="how-it-works"
-          aria-labelledby="workflow-title"
-        >
-          <div className="section-heading">
-            <span className="section-eyebrow">
-              <i /> GET STARTED IN THREE STEPS
-            </span>
-            <h2 id="workflow-title">
-              From Discord sign-in to <em>server control.</em>
-            </h2>
-            <p>Start with the communities you manage. Keep the rest permission-aware.</p>
-          </div>
-          <div className="workflow-grid">
-            {steps.map((step) => {
-              const Icon = step.icon;
-              return (
-                <article className="workflow-step" key={step.number}>
-                  <div className="workflow-step-top">
-                    <span>{step.number}</span>
-                    <Icon size={20} />
-                  </div>
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="landing-faq" id="faq" aria-labelledby="faq-title">
-          <div className="faq-intro">
-            <span className="section-eyebrow">
-              <i /> GOOD TO KNOW
-            </span>
-            <h2 id="faq-title">
-              Questions, <em>answered.</em>
-            </h2>
-            <p>What to expect when you bring Axex into your server workflow.</p>
-          </div>
-          <div className="faq-list">
-            {faqs.map((item, index) => (
-              <details className="faq-item" key={item.question} open={index === 0}>
-                <summary>
-                  <span>{item.question}</span>
-                  <ChevronDown size={17} />
-                </summary>
-                <p>{item.answer}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-final-cta">
-          <div className="final-cta-glow" aria-hidden="true" />
-          <div className="final-cta-icon">
-            <ShieldCheck size={26} />
-          </div>
-          <div className="final-cta-copy">
-            <span className="section-eyebrow">
-              <i /> YOUR SERVER. YOUR CONTROL.
-            </span>
-            <h2>
-              Bring your server operations <em>together.</em>
-            </h2>
-            <p>Connect Discord and open your Axex workspace.</p>
-          </div>
-          <a
-            className="landing-primary-button final-cta-button"
-            href={signedIn ? "/servers" : authHref}
+          <motion.section
+            className="landing-section landing-workflow"
+            id="how-it-works"
+            aria-labelledby="workflow-title"
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.14 }}
+            transition={{ duration: 0.48, ease: "easeOut" }}
           >
-            {signedIn ? "Open your dashboard" : "Continue with Discord"}
-            <ArrowRight size={17} />
-          </a>
-        </section>
-      </main>
+            <div className="section-heading">
+              <span className="section-eyebrow">
+                <i /> GET STARTED
+              </span>
+              <h2 id="workflow-title">
+                Setup takes <em>three steps.</em>
+              </h2>
+              <p>From Discord sign-in to server control.</p>
+            </div>
+            <div className="workflow-grid">
+              {steps.map((step) => {
+                const Icon = step.icon;
+                return (
+                  <article className="workflow-step" key={step.number}>
+                    <div className="workflow-step-top">
+                      <span>{step.number}</span>
+                      <Icon size={21} />
+                    </div>
+                    <h3>{step.title}</h3>
+                    <p>{step.description}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </motion.section>
 
-      <footer className="landing-footer">
-        <a href="/" className="landing-footer-brand">
-          <span className="landing-brand-mark">AX</span>
-          <strong>AXEX</strong>
-        </a>
-        <span className="landing-footer-note">Discord security control platform.</span>
-        <div className="landing-footer-links">
-          <a href="#platform">Platform</a>
-          <a href="#security">Security</a>
-          <a href="#faq">FAQ</a>
-        </div>
-        <span className="landing-footer-copy">© {new Date().getFullYear()} Axex</span>
-      </footer>
-    </div>
+          <motion.section
+            className="landing-faq"
+            id="faq"
+            aria-labelledby="faq-title"
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.14 }}
+            transition={{ duration: 0.48, ease: "easeOut" }}
+          >
+            <div className="faq-intro">
+              <span className="section-eyebrow">
+                <i /> FAQ
+              </span>
+              <h2 id="faq-title">Good to know.</h2>
+              <p>The essentials, answered.</p>
+            </div>
+            <Accordion type="single" collapsible className="faq-accordion">
+              {faqs.map((faq, index) => (
+                <AccordionItem value={"faq-" + index} key={faq.question}>
+                  <AccordionTrigger>{faq.question}</AccordionTrigger>
+                  <AccordionContent>
+                    <p>{faq.answer}</p>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </motion.section>
+
+          <motion.section
+            className="landing-final-cta"
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            <div className="final-cta-icon">
+              <ShieldCheck size={25} />
+            </div>
+            <div className="final-cta-copy">
+              <span className="section-eyebrow">AXEX SECURITY</span>
+              <h2>Ready to take control?</h2>
+              <p>Connect Discord. Open your dashboard.</p>
+            </div>
+            <Button asChild variant="primary" className="final-cta-button">
+              <a href={signedIn ? "/servers" : authHref}>
+                Continue with Discord <ArrowRight size={16} />
+              </a>
+            </Button>
+          </motion.section>
+        </main>
+
+        <footer className="landing-footer">
+          <a className="landing-footer-brand" href="/" aria-label="Axex home">
+            <span className="landing-brand-mark">AX</span>
+            <strong>AXEX</strong>
+          </a>
+          <span className="landing-footer-note">Discord security, under control.</span>
+          <nav className="landing-footer-links" aria-label="Footer">
+            <a href="#platform">Platform</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+          <span className="landing-footer-copy">© 2026 AXEX</span>
+        </footer>
+      </div>
+    </MotionConfig>
   );
 }

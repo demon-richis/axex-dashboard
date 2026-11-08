@@ -63,7 +63,7 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   );
   assert.match(html, /Discord security\./);
   assert.match(html, /Under control\./);
-  assert.match(html, /DISCORD SECURITY CONTROL PLANE/);
+  assert.match(html, /DISCORD SECURITY/);
   assert.match(html, /id="platform"/);
   assert.match(html, /id="security"/);
   assert.match(html, /id="how-it-works"/);
@@ -73,9 +73,9 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /Continue with Discord/);
   assert.match(html, /Permission-aware/);
   assert.match(html, /PRODUCT PREVIEW/);
-  assert.match(html, /Not live server data/);
+  assert.match(html, /Demo data/);
   assert.match(html, /Verification portal/);
-  assert.match(html, /Raid awareness/);
+  assert.match(html, /Raid detection/);
   assert.doesNotMatch(html, /99\.9%|24\.7K|12\.3K|All systems operational/);
   assert.doesNotMatch(html, /No bot token in dashboard/);
   assert.doesNotMatch(html, /Keep your server/);
