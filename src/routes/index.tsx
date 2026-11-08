@@ -234,12 +234,12 @@ function LandingPage() {
 
             <div className="landing-assurance">
               <span>
-                  <i /> Server-focused security
-                </span>
+                <i /> Server-focused security
+              </span>
               <b />
               <span>
-                  <LockKeyhole size={13} /> Discord sign-in
-                </span>
+                <LockKeyhole size={13} /> Discord sign-in
+              </span>
               <b />
               <span>No bot token in dashboard</span>
             </div>
