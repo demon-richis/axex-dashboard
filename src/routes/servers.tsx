@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 
 import { LoadingSkeleton } from "../components/loading-skeleton";
@@ -52,7 +52,7 @@ export const Route = createFileRoute("/servers")({
   loader: () => loadServers(),
   head: () => ({ meta: [{ title: "Your servers · Axex Dashboard" }] }),
   errorComponent: ServerPickerError,
-  component: ServerPicker,
+  component: ServersRouteView,
 });
 
 function inviteForGuild(base: string, guildId: string): string {
@@ -64,6 +64,12 @@ function inviteForGuild(base: string, guildId: string): string {
   } catch {
     return base;
   }
+}
+
+function ServersRouteView() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const normalizedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  return normalizedPath === "/servers" ? <ServerPicker /> : <Outlet />;
 }
 
 function ServerPicker() {
