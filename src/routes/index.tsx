@@ -32,13 +32,7 @@ import {
   AccordionTrigger,
 } from "../components/ui/accordion";
 import { Badge } from "../components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -81,7 +75,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Axex — Discord Security" },
       {
         property: "og:description",
-        content: "Stop fake accounts before they get access. Verify new members and review every case.",
+        content:
+          "Stop fake accounts before they get access. Verify new members and review every case.",
       },
     ],
   }),
