@@ -32,7 +32,13 @@ import {
   AccordionTrigger,
 } from "../components/ui/accordion";
 import { Badge } from "../components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -631,7 +637,10 @@ function LandingPage() {
               <h2 id="ecosystem-title">
                 From the server <em>to the case record.</em>
               </h2>
-              <p>The bot controls server access, the portal runs the check, and the dashboard gives admins a place to review servers.</p>
+              <p>
+                The bot controls server access, the portal runs the check, and the dashboard gives
+                admins a place to review servers.
+              </p>
               <a className="text-link" href="#how-it-works">
                 See the member flow <ArrowUpRight size={15} />
               </a>
@@ -739,12 +748,8 @@ function LandingPage() {
                     <span>#quarantine</span>
                     <span>Case recorded</span>
                   </div>
-                  <p className="case-example-reason">
-                    Reason: Verification attempts exhausted
-                  </p>
-                  <p className="case-example-note">
-                    Sample data, not a live server record.
-                  </p>
+                  <p className="case-example-reason">Reason: Verification attempts exhausted</p>
+                  <p className="case-example-note">Sample data, not a live server record.</p>
                 </CardContent>
               </Card>
             </div>
@@ -809,7 +814,9 @@ function LandingPage() {
               <span className="landing-brand-mark">AX</span>
               <strong>AXEX</strong>
             </a>
-            <p className="landing-footer-note">Human checks and clear case history for Discord communities.</p>
+            <p className="landing-footer-note">
+              Human checks and clear case history for Discord communities.
+            </p>
             <nav className="landing-footer-links" aria-label="Footer navigation">
               <a href="#platform">Platform</a>
               <a href="#security">Protection</a>
@@ -824,7 +831,9 @@ function LandingPage() {
             <p className="landing-footer-copy">
               © {new Date().getFullYear()} Axex. All rights reserved.
             </p>
-            <span className="landing-footer-caption">Verification, quarantine and case history.</span>
+            <span className="landing-footer-caption">
+              Verification, quarantine and case history.
+            </span>
           </div>
         </footer>
       </div>
