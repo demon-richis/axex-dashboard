@@ -2,14 +2,6 @@
 @source "../src";
 @import "tw-animate-css";
 
-@font-face {
-  font-family: Inter;
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url("/fonts/inter-latin.woff2") format("woff2");
-}
-
 :root {
   color-scheme: dark;
   --bg: #0d0b0b;
