@@ -71,7 +71,10 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /id="faq"/);
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
-  assert.match(html, /Continue with Discord/);
+  assert.match(html, /Invite Axex/);
+  assert.doesNotMatch(html, /Continue with Discord|Explore features/);
+  assert.match(html, /Get started/);
+  assert.match(html, /href="https:\/\/discord.com\/oauth2\/authorize"/);
   assert.match(html, /Permission-aware/);
   assert.match(html, /PRODUCT PREVIEW/);
   assert.match(html, /Demo data/);
@@ -84,6 +87,8 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /Back to top/);
   assert.doesNotMatch(html, /landing-hero-copy"[^>]*style="[^"]*opacity:0/);
   assert.doesNotMatch(html, /landing-hero-visual"[^>]*style="[^"]*opacity:0/);
+  assert.match(html, /capability-card/);
+  assert.match(html, /THE PLATFORM/);
   assert.doesNotMatch(html, /99\.9%|24\.7K|12\.3K|All systems operational/);
   assert.doesNotMatch(html, /No bot token in dashboard/);
   assert.doesNotMatch(html, /Keep your server/);

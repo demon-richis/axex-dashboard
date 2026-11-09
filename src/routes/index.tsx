@@ -31,6 +31,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../components/ui/accordion";
+import { Badge } from "../components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -54,6 +62,7 @@ const loadLanding = createServerFn({ method: "GET" }).handler(async () => {
     signedIn: Boolean(getSession(request)),
     connected: search.get("connected") === "1",
     error: search.get("error"),
+    inviteUrl: process.env["BOT_INVITE_URL"] ?? "https://discord.com/oauth2/authorize",
   };
 });
 
@@ -141,21 +150,21 @@ const surfaces = [
 const steps = [
   {
     number: "01",
-    icon: LockKeyhole,
-    title: "Sign in",
-    description: "Use your Discord account.",
+    icon: Bot,
+    title: "Invite Axex",
+    description: "Add the bot to your Discord server.",
   },
   {
     number: "02",
-    icon: Network,
-    title: "Connect a server",
-    description: "Add Axex to your server.",
+    icon: LockKeyhole,
+    title: "Sign in",
+    description: "Connect your Discord account.",
   },
   {
     number: "03",
     icon: SlidersHorizontal,
-    title: "Take control",
-    description: "Open your workspace.",
+    title: "Configure",
+    description: "Set up your server controls.",
   },
 ];
 
@@ -226,11 +235,9 @@ function DiscordMark({ size = 17 }: { size?: number }) {
 }
 
 function LandingPage() {
-  const { signedIn, connected, error } = Route.useLoaderData();
+  const { signedIn, connected, error, inviteUrl } = Route.useLoaderData();
   const [menuOpen, setMenuOpen] = useState(false);
   const authHref = signedIn ? "/api/auth/discord?consent=1" : "/api/auth/discord";
-  const signInLabel = signedIn ? "Reconnect Discord" : "Sign in with Discord";
-  const primaryLabel = signedIn ? "Open dashboard" : "Continue with Discord";
 
   let notice = "";
   if (connected) notice = "Discord connected. Your servers are ready.";
@@ -260,21 +267,30 @@ function LandingPage() {
           <nav className="landing-nav" aria-label="Main navigation">
             <a href="#platform">Platform</a>
             <a href="#security">Protection</a>
-            <a href="#how-it-works">Setup</a>
+            <a href="#how-it-works">Get started</a>
             <a href="#faq">FAQ</a>
           </nav>
 
           <div className="landing-header-actions">
-            {signedIn && (
+            {signedIn ? (
               <a className="landing-dashboard-link" href="/servers">
                 Dashboard <ArrowUpRight size={14} />
               </a>
+            ) : (
+              <a className="landing-signin-link" href={authHref}>
+                Sign in
+              </a>
             )}
-            <Button asChild variant="secondary" className="landing-header-cta">
-              <a href={authHref} aria-label={signInLabel}>
+            <Button asChild variant="primary" className="landing-header-cta">
+              <a
+                href={inviteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Invite Axex to your Discord server"
+              >
                 <DiscordMark size={17} />
-                <span>{signInLabel}</span>
-                <ArrowRight size={15} />
+                <span>Invite Axex</span>
+                <ArrowUpRight size={15} />
               </a>
             </Button>
 
@@ -312,7 +328,7 @@ function LandingPage() {
                   </DialogClose>
                   <DialogClose asChild>
                     <a href="#how-it-works">
-                      Setup <ArrowUpRight size={15} />
+                      Get started <ArrowUpRight size={15} />
                     </a>
                   </DialogClose>
                   <DialogClose asChild>
@@ -320,10 +336,16 @@ function LandingPage() {
                       FAQ <ArrowUpRight size={15} />
                     </a>
                   </DialogClose>
-                  {signedIn && (
+                  {signedIn ? (
                     <DialogClose asChild>
                       <a href="/servers" className="mobile-dashboard-link">
                         Open dashboard <ArrowRight size={15} />
+                      </a>
+                    </DialogClose>
+                  ) : (
+                    <DialogClose asChild>
+                      <a href={authHref} className="mobile-signin-link">
+                        Sign in with Discord <ArrowRight size={15} />
                       </a>
                     </DialogClose>
                   )}
@@ -366,15 +388,14 @@ function LandingPage() {
               )}
               <div className="landing-actions">
                 <Button asChild variant="primary">
-                  <a href={signedIn ? "/servers" : authHref}>
+                  <a
+                    href={inviteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Invite Axex to your Discord server"
+                  >
                     <DiscordMark size={17} />
-                    <span>{primaryLabel}</span>
-                    <ArrowRight size={17} />
-                  </a>
-                </Button>
-                <Button asChild variant="secondary">
-                  <a href="#platform">
-                    <span>Explore features</span>
+                    <span>Invite Axex</span>
                     <ArrowUpRight size={17} />
                   </a>
                 </Button>
@@ -565,25 +586,33 @@ function LandingPage() {
               {capabilities.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <motion.article
-                    className="capability-card"
+                  <motion.div
+                    className="capability-card-motion"
                     key={feature.number}
                     initial={{ y: 16 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.25 }}
                     transition={{ duration: 0.42, delay: index * 0.07, ease: "easeOut" }}
                   >
-                    <div className="capability-card-top">
-                      <span className={"capability-icon " + feature.tone}>
-                        <Icon size={21} />
-                      </span>
-                      <span className="capability-number">{feature.number}</span>
-                    </div>
-                    <span className="capability-tag">{feature.tag}</span>
-                    <h3>{feature.title}</h3>
-                    <p>{feature.description}</p>
-                    <span className="capability-rule" />
-                  </motion.article>
+                    <Card className="capability-card">
+                      <CardHeader className="capability-card-header">
+                        <div className="capability-card-top">
+                          <span className={"capability-icon " + feature.tone}>
+                            <Icon size={21} />
+                          </span>
+                          <span className="capability-number">{feature.number}</span>
+                        </div>
+                        <Badge variant="outline" className={"capability-tag capability-tag-" + feature.tone}>
+                          {feature.tag}
+                        </Badge>
+                      </CardHeader>
+                      <CardContent className="capability-card-content">
+                        <CardTitle>{feature.title}</CardTitle>
+                        <CardDescription>{feature.description}</CardDescription>
+                        <span className="capability-rule" />
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 );
               })}
             </div>
@@ -606,8 +635,8 @@ function LandingPage() {
                 One system. <em>Three surfaces.</em>
               </h2>
               <p>Bot, dashboard, portal. Working together.</p>
-              <a className="text-link" href={signedIn ? "/servers" : authHref}>
-                {signedIn ? "Open dashboard" : "Connect Discord"} <ArrowUpRight size={15} />
+              <a className="text-link" href="#how-it-works">
+                View setup steps <ArrowUpRight size={15} />
               </a>
             </div>
             <div className="ecosystem-stack">
@@ -644,9 +673,9 @@ function LandingPage() {
                 <i /> GET STARTED
               </span>
               <h2 id="workflow-title">
-                Setup takes <em>three steps.</em>
+                Get started. <em>In three steps.</em>
               </h2>
-              <p>From Discord sign-in to server control.</p>
+              <p>Invite Axex, connect Discord, and configure your server.</p>
             </div>
             <div className="workflow-grid">
               {steps.map((step) => {
@@ -709,10 +738,10 @@ function LandingPage() {
               <p>Connect Discord. Open your dashboard.</p>
             </div>
             <Button asChild variant="primary" className="final-cta-button">
-              <a href={signedIn ? "/servers" : authHref}>
-                {signedIn ? <LayoutDashboard size={16} /> : <DiscordMark size={16} />}
-                <span>{primaryLabel}</span>
-                <ArrowRight size={16} />
+              <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
+                <DiscordMark size={16} />
+                <span>Invite Axex</span>
+                <ArrowUpRight size={16} />
               </a>
             </Button>
           </motion.section>
