@@ -10,9 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ServersRouteImport } from './routes/servers'
-import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ApiAdminsRouteImport } from './routes/api.admins'
 import { Route as ServersGuildIdRouteImport } from './routes/servers.$guildId'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api.auth.callback'
@@ -27,19 +25,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ServersRoute = ServersRouteImport.update({
   id: '/servers',
   path: '/servers',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminsRoute = ApiAdminsRouteImport.update({
@@ -85,9 +73,7 @@ const ServersGuildIdAuditRoute = ServersGuildIdAuditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/privacy': typeof PrivacyRoute
   '/servers': typeof ServersRouteWithChildren
-  '/terms': typeof TermsRoute
   '/api/admins': typeof ApiAdminsRoute
   '/servers/$guildId': typeof ServersGuildIdRouteWithChildren
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -99,9 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/privacy': typeof PrivacyRoute
   '/servers': typeof ServersRouteWithChildren
-  '/terms': typeof TermsRoute
   '/api/admins': typeof ApiAdminsRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/discord': typeof ApiAuthDiscordRoute
@@ -113,9 +97,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/privacy': typeof PrivacyRoute
   '/servers': typeof ServersRouteWithChildren
-  '/terms': typeof TermsRoute
   '/api/admins': typeof ApiAdminsRoute
   '/servers/$guildId': typeof ServersGuildIdRouteWithChildren
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -129,9 +111,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/privacy'
     | '/servers'
-    | '/terms'
     | '/api/admins'
     | '/servers/$guildId'
     | '/api/auth/callback'
@@ -143,9 +123,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/privacy'
     | '/servers'
-    | '/terms'
     | '/api/admins'
     | '/api/auth/callback'
     | '/api/auth/discord'
@@ -156,9 +134,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/privacy'
     | '/servers'
-    | '/terms'
     | '/api/admins'
     | '/servers/$guildId'
     | '/api/auth/callback'
@@ -171,9 +147,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PrivacyRoute: typeof PrivacyRoute
   ServersRoute: typeof ServersRouteWithChildren
-  TermsRoute: typeof TermsRoute
   ApiAdminsRoute: typeof ApiAdminsRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthDiscordRoute: typeof ApiAuthDiscordRoute
@@ -189,25 +163,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/servers': {
       id: '/servers'
       path: '/servers'
       fullPath: '/servers'
       preLoaderRoute: typeof ServersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admins': {
@@ -298,9 +258,7 @@ const ServersRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PrivacyRoute: PrivacyRoute,
   ServersRoute: ServersRouteWithChildren,
-  TermsRoute: TermsRoute,
   ApiAdminsRoute: ApiAdminsRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthDiscordRoute: ApiAuthDiscordRoute,

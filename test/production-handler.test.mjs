@@ -62,31 +62,36 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
     scripts.every((script) => script.includes(`nonce="${nonce}"`)),
     "every rendered script nonce matches CSP",
   );
-  assert.match(html, /Stop fake accounts before they join your server/);
-  assert.match(html, /id="protection"/);
+  assert.match(html, /Discord security\./);
+  assert.match(html, /Under control\./);
+  assert.match(html, /DISCORD SECURITY/);
+  assert.match(html, /id="platform"/);
+  assert.match(html, /id="security"/);
   assert.match(html, /id="how-it-works"/);
-  assert.match(html, /id="roadmap"/);
   assert.match(html, /id="faq"/);
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
-  assert.match(html, /Add Axex to Discord/);
-  assert.match(html, /See how it works/);
-  assert.match(html, /Verification Required/);
-  assert.match(html, /Verification Success/);
-  assert.match(html, /74633148/);
-  assert.match(html, /View logs/);
-  assert.match(html, /Cloudflare Turnstile/);
-  assert.match(html, /Quarantine, not kick/);
-  assert.match(html, /EXPIRED/);
-  assert.doesNotMatch(
-    html,
-    /Discord security\.|Under control\.|Raid detection|PRODUCT PREVIEW|Permission-aware|Portal-linked/,
-  );
-  assert.match(html, /href="\[INVITE_URL_TBD\]"/);
-  assert.match(html, /Dashboard: coming soon/);
-  assert.match(html, /href="\/privacy"/);
-  assert.match(html, /href="\/terms"/);
+  assert.match(html, /Invite Axex/);
+  assert.doesNotMatch(html, /Continue with Discord|Explore features/);
+  assert.match(html, /Get started/);
+  assert.match(html, /href="https:\/\/discord.com\/oauth2\/authorize"/);
+  assert.match(html, /Permission-aware/);
+  assert.match(html, /PRODUCT PREVIEW/);
+  assert.match(html, /Demo data/);
+  assert.match(html, /Verification portal/);
+  assert.match(html, /Raid detection/);
+  const landingSource = await readFile(new URL("../src/routes/index.tsx", import.meta.url), "utf8");
+  assert.match(landingSource, /The server owner controls dashboard access/);
+  assert.doesNotMatch(landingSource, /Access follows your Discord permissions/);
+  assert.ok(html.includes("All rights reserved."));
+  assert.match(html, /Back to top/);
+  assert.doesNotMatch(html, /landing-hero-copy"[^>]*style="[^"]*opacity:0/);
+  assert.doesNotMatch(html, /landing-hero-visual"[^>]*style="[^"]*opacity:0/);
+  assert.match(html, /capability-card/);
+  assert.match(html, /THE PLATFORM/);
   assert.doesNotMatch(html, /99\.9%|24\.7K|12\.3K|All systems operational/);
+  assert.doesNotMatch(html, /No bot token in dashboard/);
+  assert.doesNotMatch(html, /Keep your server/);
 
   const malformedPathResponse = await fetch(`${baseUrl}/%E0%A4%A`);
   assert.equal(malformedPathResponse.status, 400);
