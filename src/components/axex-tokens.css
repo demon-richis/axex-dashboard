@@ -1,0 +1,15 @@
+:root {
+  --ax-canvas: #0c0606;
+  --ax-surface: #140909;
+  --ax-translucent: rgba(255, 255, 255, 0.018);
+  --ax-border: rgba(255, 255, 255, 0.04);
+  --ax-crimson: #de2024;
+  --ax-crimson-border: rgba(220, 38, 38, 0.14);
+  --ax-lime: #84cc16;
+  --ax-lime-ring: rgba(132, 204, 22, 0.4);
+  --ax-lime-soft: rgba(132, 204, 22, 0.07);
+  --ax-amber: #ffb21e;
+  --ax-text: rgba(255, 255, 255, 0.85);
+  --ax-muted: rgba(255, 255, 255, 0.72);
+  --ax-radius: 12px;
+}
