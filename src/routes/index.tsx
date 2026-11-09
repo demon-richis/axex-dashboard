@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { MotionConfig, motion } from "framer-motion";
@@ -241,7 +241,41 @@ function DiscordMark({ size = 17 }: { size?: number }) {
 function LandingPage() {
   const { signedIn, connected, error, inviteUrl } = Route.useLoaderData();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const authHref = signedIn ? "/api/auth/discord?consent=1" : "/api/auth/discord";
+
+  useEffect(() => {
+    const sectionIds = ["platform", "security", "how-it-works", "faq"] as const;
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => section !== null);
+
+    if (sections.length === 0 || typeof IntersectionObserver === "undefined") return;
+
+    const observedSections = new Map<string, IntersectionObserverEntry>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          observedSections.set((entry.target as HTMLElement).id, entry);
+        }
+
+        const focusLine = window.innerHeight * 0.4;
+        const currentSection = [...observedSections.values()]
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (first, second) =>
+              Math.abs(first.boundingClientRect.top - focusLine) -
+              Math.abs(second.boundingClientRect.top - focusLine),
+          )[0];
+
+        setActiveSection(currentSection ? (currentSection.target as HTMLElement).id : null);
+      },
+      { rootMargin: "-30% 0px -55% 0px", threshold: 0 },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   let notice = "";
   if (connected) notice = "Discord connected. Your servers are ready.";
@@ -269,10 +303,34 @@ function LandingPage() {
           </a>
 
           <nav className="landing-nav" aria-label="Main navigation">
-            <a href="#platform">Platform</a>
-            <a href="#security">Protection</a>
-            <a href="#how-it-works">How it works</a>
-            <a href="#faq">Questions</a>
+            <a
+              href="#platform"
+              aria-current={activeSection === "platform" ? "location" : undefined}
+              onClick={() => setActiveSection("platform")}
+            >
+              Platform
+            </a>
+            <a
+              href="#security"
+              aria-current={activeSection === "security" ? "location" : undefined}
+              onClick={() => setActiveSection("security")}
+            >
+              Protection
+            </a>
+            <a
+              href="#how-it-works"
+              aria-current={activeSection === "how-it-works" ? "location" : undefined}
+              onClick={() => setActiveSection("how-it-works")}
+            >
+              How it works
+            </a>
+            <a
+              href="#faq"
+              aria-current={activeSection === "faq" ? "location" : undefined}
+              onClick={() => setActiveSection("faq")}
+            >
+              Questions
+            </a>
           </nav>
 
           <div className="landing-header-actions">

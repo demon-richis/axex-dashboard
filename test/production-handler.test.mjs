@@ -96,6 +96,14 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /three failed attempts/);
   assert.match(html, /#quarantine/);
   const landingSource = await readFile(new URL("../src/routes/index.tsx", import.meta.url), "utf8");
+  const landingStyles = await readFile(
+    new URL("../src/components/landing.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(landingSource, /new IntersectionObserver/);
+  assert.match(landingSource, /aria-current=\{activeSection === "platform"/);
+  assert.match(landingStyles, /\.landing-nav > a\[aria-current="location"\]/);
+  assert.doesNotMatch(landingStyles, /\.landing-nav > a\[href="#how-it-works"\]/);
   assert.match(landingSource, /The server owner controls dashboard access/);
   assert.doesNotMatch(landingSource, /Access follows your Discord permissions/);
   assert.ok(html.includes("All rights reserved."));
