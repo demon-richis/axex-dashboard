@@ -1281,3 +1281,340 @@
     transition: none;
   }
 }
+
+
+/* Verification-led copy and the sample case walkthrough. */
+.hero-eyebrow {
+  letter-spacing: 0.075em;
+}
+
+.hero-lede {
+  max-width: 590px;
+  font-size: clamp(16px, 1.45vw, 19px);
+  font-weight: 540;
+  line-height: 1.65;
+  letter-spacing: -0.018em;
+}
+
+.landing-hero h1 {
+  max-width: 700px;
+  font-size: clamp(48px, 5.15vw, 70px);
+  line-height: 1.02;
+}
+
+.landing-actions .landing-secondary-button {
+  min-width: 172px;
+  min-height: 52px;
+  border-radius: 14px;
+  justify-content: center;
+}
+
+.landing-assurance {
+  flex-wrap: wrap;
+}
+
+.section-eyebrow {
+  letter-spacing: 0.045em;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.capability-tag {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+
+.preview-kicker,
+.preview-sidebar-label,
+.preview-demo-label,
+.preview-main-top,
+.preview-security-heading,
+.preview-security-heading span:last-child {
+  letter-spacing: 0.025em;
+}
+
+.case-example {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(330px, 0.85fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 60px);
+  margin-top: 40px;
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 5% 0%, rgba(220, 38, 38, 0.08), transparent 45%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.008));
+}
+
+.case-example-copy {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.case-example-label {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.08);
+  color: #fcd34d;
+  font-size: 10px;
+}
+
+.case-example-copy h3 {
+  max-width: 460px;
+  margin: 2px 0 0;
+  color: #f8f3ef;
+  font-size: clamp(23px, 2.8vw, 34px);
+  font-weight: 760;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+
+.case-example-copy p {
+  max-width: 520px;
+  margin: 0;
+  color: var(--lp-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.case-example-copy code {
+  display: inline;
+  margin-inline: 2px;
+  border: 1px solid rgba(220, 38, 38, 0.22);
+  border-radius: 5px;
+  background: rgba(220, 38, 38, 0.09);
+  padding: 2px 5px;
+  color: #fca5a5;
+  font-size: 0.92em;
+}
+
+.case-example-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 17px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)),
+    #171312;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.case-example-card-header {
+  display: grid;
+  gap: 11px;
+  padding: 22px 22px 16px;
+}
+
+.case-example-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #aaa09a;
+  font-size: 10px;
+}
+
+.case-example-card .case-example-card-header h3 {
+  color: #fff7f2;
+  font-size: 26px;
+  font-weight: 760;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.case-example-card .case-example-card-header p {
+  color: #a99e97;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.case-example-card-content {
+  display: grid;
+  gap: 16px;
+  padding: 4px 22px 20px;
+}
+
+.case-example-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 0;
+  border-top: 1px solid var(--lp-line);
+  border-bottom: 1px solid var(--lp-line);
+}
+
+.case-example-meta > div {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.case-example-meta > div > span {
+  color: #968b84;
+  font-size: 9px;
+}
+
+.case-example-meta strong {
+  color: #f7f0eb;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.case-example-status {
+  border-color: rgba(220, 38, 38, 0.3);
+  background: rgba(220, 38, 38, 0.1);
+  color: #fca5a5;
+  font-size: 9px;
+}
+
+.case-example-channel {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.075);
+  color: #f6c4bf;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.case-example-channel svg {
+  flex: none;
+  color: #f87171;
+}
+
+.case-example-channel > span:last-child {
+  margin-left: auto;
+  color: #a99b93;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.case-example-reason {
+  margin: -6px 0 0;
+  color: #b8aca4;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.case-example-note {
+  margin: -6px 0 0;
+  color: #827770;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .case-example {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 22px;
+  }
+
+  .case-example-copy {
+    max-width: 680px;
+  }
+}
+
+@media (max-width: 680px) {
+  .landing-hero h1 {
+    font-size: clamp(40px, 10.2vw, 58px);
+    line-height: 1.03;
+  }
+
+  .hero-lede {
+    max-width: 100%;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .landing-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .landing-actions .landing-primary-button,
+  .landing-actions .landing-secondary-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 49px;
+  }
+
+  .landing-assurance {
+    gap: 8px 11px;
+    font-size: 8px;
+  }
+
+  .case-example {
+    gap: 18px;
+    margin-top: 25px;
+    padding: 16px;
+    border-radius: 15px;
+  }
+
+  .case-example-copy h3 {
+    font-size: 25px;
+  }
+
+  .case-example-copy p {
+    font-size: 10px;
+  }
+
+  .case-example-card {
+    border-radius: 13px;
+  }
+
+  .case-example-card-header {
+    padding: 17px 16px 12px;
+  }
+
+  .case-example-card .case-example-card-header h3 {
+    font-size: 22px;
+  }
+
+  .case-example-card-content {
+    gap: 12px;
+    padding: 3px 16px 16px;
+  }
+
+  .case-example-meta {
+    gap: 7px;
+  }
+
+  .case-example-meta > div > span {
+    font-size: 8px;
+  }
+
+  .case-example-meta strong {
+    font-size: 12px;
+  }
+
+  .case-example-status {
+    padding-inline: 6px;
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .landing-hero h1 {
+    font-size: 39px;
+  }
+
+  .case-example-channel {
+    gap: 6px;
+    padding-inline: 9px;
+  }
+
+  .case-example-channel > span:last-child {
+    font-size: 8px;
+  }
+}

@@ -70,12 +70,12 @@ export const Route = createFileRoute("/")({
       { title: "Axex — Discord Security" },
       {
         name: "description",
-        content: "Discord security, verification and server controls in one dashboard.",
+        content: "Human verification, quarantine and searchable case history for Discord servers.",
       },
       { property: "og:title", content: "Axex — Discord Security" },
       {
         property: "og:description",
-        content: "One dashboard for your Discord security.",
+        content: "Stop fake accounts before they get access. Verify new members and review every case.",
       },
     ],
   }),
@@ -84,36 +84,37 @@ export const Route = createFileRoute("/")({
 
 const capabilities = [
   {
-    icon: Server,
+    icon: Fingerprint,
     number: "01",
-    title: "Server management",
-    tag: "SERVER OPS",
-    tone: "red",
-    description: "Every connected server, one workspace.",
+    title: "Member verification",
+    tag: "Human check",
+    tone: "green",
+    description: "Give new members a challenge before they can access server channels.",
   },
   {
-    icon: Fingerprint,
+    icon: ShieldCheck,
     number: "02",
-    title: "Member verification",
-    tag: "IDENTITY",
-    tone: "green",
-    description: "Verify members before they get access.",
+    title: "Quarantine controls",
+    tag: "Access control",
+    tone: "red",
+    description: "Lock failed verification sessions and apply the Quarantined role.",
   },
   {
     icon: Radar,
     number: "03",
     title: "Raid detection",
-    tag: "THREAT SIGNALS",
+    tag: "Join activity",
     tone: "amber",
-    description: "Spot unusual join activity early.",
+    description: "Flag unusual join spikes and switch raid mode on when thresholds are crossed.",
   },
   {
-    icon: UsersRound,
+    icon: FileClock,
     number: "04",
-    title: "Admin & audit",
-    tag: "GOVERNANCE",
+    title: "Case history",
+    tag: "Case ID",
     tone: "green",
-    description: "Control access. Review changes.",
+    description:
+      "Look up an eight-digit ID to review the reason, result and verification timeline.",
   },
 ];
 
@@ -121,23 +122,23 @@ const surfaces = [
   {
     icon: Bot,
     title: "Axex bot",
-    label: "DISCORD",
+    label: "Discord",
     tone: "red",
-    description: "Protection inside your server.",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Web dashboard",
-    label: "CONTROL",
-    tone: "green",
-    description: "Server controls in one place.",
+    description: "Applies roles, limits access and posts case updates in your server.",
   },
   {
     icon: Fingerprint,
     title: "Verification portal",
-    label: "MEMBERS",
+    label: "Member checks",
     tone: "amber",
-    description: "A clean member check-in.",
+    description: "Runs the human challenge and stores each verification result.",
+  },
+  {
+    icon: LayoutDashboard,
+    title: "Web dashboard",
+    label: "Server controls",
+    tone: "green",
+    description: "Manage connected servers and review administrator access.",
   },
 ];
 
@@ -145,40 +146,48 @@ const steps = [
   {
     number: "01",
     icon: Bot,
-    title: "Invite Axex",
-    description: "Add the bot to your Discord server.",
+    title: "Add Axex",
+    description: "Install the bot. Axex creates the verification roles, channels and panel.",
   },
   {
     number: "02",
-    icon: LockKeyhole,
-    title: "Sign in",
-    description: "Connect your Discord account.",
+    icon: Fingerprint,
+    title: "Check new members",
+    description: "Members complete a human verification challenge before getting access.",
   },
   {
     number: "03",
-    icon: SlidersHorizontal,
-    title: "Configure",
-    description: "Set up your server controls.",
+    icon: FileClock,
+    title: "Review the case",
+    description: "Failed checks are recorded. Admins can inspect each result by Case ID.",
   },
 ];
 
 const faqs = [
   {
-    question: "What is Axex?",
-    answer: "A Discord security platform with a bot, dashboard and verification portal.",
+    question: "What happens when verification fails three times?",
+    answer:
+      "Axex locks the verification session, applies the Quarantined role and records the outcome under a Case ID.",
   },
   {
-    question: "Does it replace Discord?",
-    answer: "No. Axex works alongside Discord.",
+    question: "Are new accounts automatically quarantined?",
+    answer:
+      "Axex flags accounts below the server's configured age limit. Account age alone is not an automatic quarantine trigger.",
   },
   {
-    question: "Who can access my dashboard?",
+    question: "Can an admin look up a verification?",
+    answer:
+      "Yes. A server admin with Manage Server can use /verification-log and the eight-digit Case ID to inspect its timeline.",
+  },
+  {
+    question: "Who can open the dashboard?",
     answer:
       "The server owner controls dashboard access. Discord server permissions alone do not grant it.",
   },
   {
-    question: "Do I need the bot?",
-    answer: "Yes. Add Axex to each server you manage.",
+    question: "Do I need to install the bot?",
+    answer:
+      "Yes. Add Axex to each Discord server you want to protect. The bot creates the roles, channels and verification panel during setup.",
   },
 ];
 
@@ -254,36 +263,22 @@ function LandingPage() {
             <span className="landing-brand-copy">
               <strong>AXEX</strong>
               <i />
-              <span>SECURITY</span>
+              <span>Security</span>
             </span>
           </a>
 
           <nav className="landing-nav" aria-label="Main navigation">
             <a href="#platform">Platform</a>
             <a href="#security">Protection</a>
-            <a href="#how-it-works">Get started</a>
-            <a href="#faq">FAQ</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#faq">Questions</a>
           </nav>
 
           <div className="landing-header-actions">
-            {signedIn ? (
-              <a className="landing-dashboard-link" href="/servers">
-                Dashboard <ArrowUpRight size={14} />
-              </a>
-            ) : (
-              <a className="landing-signin-link" href={authHref}>
-                Sign in
-              </a>
-            )}
             <Button asChild variant="primary" className="landing-header-cta">
-              <a
-                href={inviteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Invite Axex to your Discord server"
-              >
-                <DiscordMark size={17} />
-                <span>Invite Axex</span>
+              <a href={signedIn ? "/servers" : authHref} aria-label="Open Axex dashboard">
+                <LayoutDashboard size={17} />
+                <span>Open dashboard</span>
                 <ArrowUpRight size={15} />
               </a>
             </Button>
@@ -307,7 +302,7 @@ function LandingPage() {
                 <div className="landing-mobile-brand">
                   <span className="landing-brand-mark">AX</span>
                   <strong>AXEX</strong>
-                  <span>SECURITY</span>
+                  <span>Security</span>
                 </div>
                 <nav className="landing-mobile-links" aria-label="Mobile navigation">
                   <DialogClose asChild>
@@ -322,12 +317,12 @@ function LandingPage() {
                   </DialogClose>
                   <DialogClose asChild>
                     <a href="#how-it-works">
-                      Get started <ArrowUpRight size={15} />
+                      How it works <ArrowUpRight size={15} />
                     </a>
                   </DialogClose>
                   <DialogClose asChild>
                     <a href="#faq">
-                      FAQ <ArrowUpRight size={15} />
+                      Questions <ArrowUpRight size={15} />
                     </a>
                   </DialogClose>
                   {signedIn ? (
@@ -339,7 +334,7 @@ function LandingPage() {
                   ) : (
                     <DialogClose asChild>
                       <a href={authHref} className="mobile-signin-link">
-                        Sign in with Discord <ArrowRight size={15} />
+                        Open dashboard <ArrowRight size={15} />
                       </a>
                     </DialogClose>
                   )}
@@ -362,15 +357,14 @@ function LandingPage() {
                   <ShieldCheck size={15} />
                 </span>
                 <span>DISCORD SECURITY</span>
-                <span className="hero-security-label">
-                  <CheckCircle2 size={13} /> Permission-aware
-                </span>
               </div>
               <h1 id="hero-title">
-                Discord security.<span> Under control.</span>
+                Stop fake accounts<span>before they get access.</span>
               </h1>
-              <p className="hero-lede">One dashboard. Every server.</p>
-              <p className="hero-description">Manage access, verification and security signals.</p>
+              <p className="hero-lede">
+                Human-check new members, quarantine failed attempts, and look up every result by
+                Case ID.
+              </p>
               {notice && (
                 <p
                   className={connected ? "landing-notice success" : "landing-notice"}
@@ -386,25 +380,31 @@ function LandingPage() {
                     href={inviteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Invite Axex to your Discord server"
+                    aria-label="Add Axex to Discord"
                   >
                     <DiscordMark size={17} />
-                    <span>Invite Axex</span>
+                    <span>Add Axex to Discord</span>
                     <ArrowUpRight size={17} />
+                  </a>
+                </Button>
+                <Button asChild variant="secondary">
+                  <a href="#how-it-works">
+                    <span>See how it works</span>
+                    <ArrowRight size={16} />
                   </a>
                 </Button>
               </div>
               <div className="landing-assurance">
                 <span>
-                  <Check size={13} /> Role-aware access
+                  <Check size={13} /> Human verification
                 </span>
                 <b />
                 <span>
-                  <Check size={13} /> Raid detection
+                  <Check size={13} /> Quarantine controls
                 </span>
                 <b />
                 <span>
-                  <Check size={13} /> Audit trail
+                  <Check size={13} /> Case history
                 </span>
               </div>
             </motion.div>
@@ -424,17 +424,17 @@ function LandingPage() {
                   <div className="preview-product-brand">
                     <span className="preview-product-mark">AX</span>
                     <span>
-                      AXEX <i>/</i> CONTROL
+                      AXEX <i>/</i> Control
                     </span>
                   </div>
                   <span className="preview-demo-label">
-                    <i /> PRODUCT PREVIEW
+                    <i /> Product preview
                   </span>
                 </div>
 
                 <div className="preview-content">
                   <aside className="preview-sidebar" aria-hidden="true">
-                    <span className="preview-sidebar-label">WORKSPACE</span>
+                    <span className="preview-sidebar-label">Workspace</span>
                     <div className="preview-side-item active">
                       <LayoutDashboard size={15} /> Overview
                     </div>
@@ -459,17 +459,17 @@ function LandingPage() {
                   <div className="preview-main">
                     <div className="preview-main-top">
                       <span>
-                        WORKSPACE <i>/</i> OVERVIEW
+                        Workspace <i>/</i> Overview
                       </span>
                       <span className="preview-access">
-                        <LockKeyhole size={11} /> ACCESS CONTROLLED
+                        <LockKeyhole size={11} /> Access controlled
                       </span>
                     </div>
                     <div className="preview-greeting">
                       <div>
-                        <span className="preview-kicker">SECURITY OVERVIEW</span>
-                        <h3>All servers. One view.</h3>
-                        <p>Your security at a glance.</p>
+                        <span className="preview-kicker">Member checks</span>
+                        <h3>Review every verification.</h3>
+                        <p>See the result and the case record.</p>
                       </div>
                       <div className="preview-shield">
                         <ShieldCheck size={23} />
@@ -497,9 +497,9 @@ function LandingPage() {
                     <div className="preview-security-card">
                       <div className="preview-security-heading">
                         <span>
-                          <Activity size={14} /> SECURITY FLOW
+                          <Activity size={14} /> Verification flow
                         </span>
-                        <span>ILLUSTRATIVE</span>
+                        <span>Illustrative data</span>
                       </div>
                       <div className="preview-flow">
                         <div className="preview-flow-node">
@@ -543,18 +543,18 @@ function LandingPage() {
           </section>
 
           <section className="landing-trust-strip" aria-label="Platform principles">
-            <span>MADE FOR SERVER ADMINS</span>
+            <span>For server admins</span>
             <i />
             <span>
-              <LockKeyhole size={14} /> Permission-aware
+              <LockKeyhole size={14} /> Role-based access
             </span>
             <i />
             <span>
-              <ShieldCheck size={14} /> Security-first
+              <ShieldCheck size={14} /> Join monitoring
             </span>
             <i />
             <span>
-              <FileClock size={14} /> Audit-ready
+              <FileClock size={14} /> Case history
             </span>
           </section>
 
@@ -569,12 +569,12 @@ function LandingPage() {
           >
             <div className="section-heading">
               <span className="section-eyebrow">
-                <i /> THE PLATFORM
+                <i /> What Axex checks
               </span>
               <h2 id="platform-title">
-                All your security. <em>One place.</em>
+                Check new members. <em>Keep a clear record.</em>
               </h2>
-              <p>The essentials, without the clutter.</p>
+              <p>See what Axex checks, when it quarantines, and how admins review a case.</p>
             </div>
             <div className="capability-grid">
               {capabilities.map((feature, index) => {
@@ -626,14 +626,14 @@ function LandingPage() {
           >
             <div className="ecosystem-copy">
               <span className="section-eyebrow">
-                <i /> CONNECTED TOGETHER
+                <i /> How the parts connect
               </span>
               <h2 id="ecosystem-title">
-                One system. <em>Three surfaces.</em>
+                From the server <em>to the case record.</em>
               </h2>
-              <p>Bot, dashboard, portal. Working together.</p>
+              <p>The bot controls server access, the portal runs the check, and the dashboard gives admins a place to review servers.</p>
               <a className="text-link" href="#how-it-works">
-                View setup steps <ArrowUpRight size={15} />
+                See the member flow <ArrowUpRight size={15} />
               </a>
             </div>
             <div className="ecosystem-stack">
@@ -667,12 +667,12 @@ function LandingPage() {
           >
             <div className="section-heading">
               <span className="section-eyebrow">
-                <i /> GET STARTED
+                <i /> How it works
               </span>
               <h2 id="workflow-title">
-                Get started. <em>In three steps.</em>
+                From first join <em>to case review.</em>
               </h2>
-              <p>Invite Axex, connect Discord, and configure your server.</p>
+              <p>Here is what happens when a new account needs a check.</p>
             </div>
             <div className="workflow-grid">
               {steps.map((step) => {
@@ -689,6 +689,65 @@ function LandingPage() {
                 );
               })}
             </div>
+            <div className="case-example" id="case-example">
+              <div className="case-example-copy">
+                <Badge variant="outline" className="case-example-label">
+                  Sample case
+                </Badge>
+                <h3 id="case-example-title">A new account fails verification.</h3>
+                <p>
+                  A 2-day-old account joins. Axex flags its age, presents a human verification
+                  challenge, and locks the session after three failed attempts.
+                </p>
+                <p>
+                  Axex applies the Quarantined role and posts the case to the configured
+                  <code>#quarantine</code> channel.
+                </p>
+              </div>
+              <Card className="case-example-card">
+                <CardHeader className="case-example-card-header">
+                  <div className="case-example-card-top">
+                    <span>Verification record</span>
+                    <Badge variant="outline" className="case-example-label">
+                      Sample
+                    </Badge>
+                  </div>
+                  <CardTitle>Case 74633148</CardTitle>
+                  <CardDescription>
+                    Verification locked after three failed attempts.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="case-example-card-content">
+                  <div className="case-example-meta">
+                    <div>
+                      <span>Account age</span>
+                      <strong>2 days</strong>
+                    </div>
+                    <div>
+                      <span>Attempts</span>
+                      <strong>3 / 3</strong>
+                    </div>
+                    <div>
+                      <span>Outcome</span>
+                      <Badge variant="outline" className="case-example-status">
+                        Quarantined
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="case-example-channel">
+                    <LockKeyhole size={15} />
+                    <span>#quarantine</span>
+                    <span>Case recorded</span>
+                  </div>
+                  <p className="case-example-reason">
+                    Reason: Verification attempts exhausted
+                  </p>
+                  <p className="case-example-note">
+                    Sample data, not a live server record.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </motion.section>
 
           <motion.section
@@ -702,10 +761,10 @@ function LandingPage() {
           >
             <div className="faq-intro">
               <span className="section-eyebrow">
-                <i /> FAQ
+                <i /> Questions
               </span>
-              <h2 id="faq-title">Good to know.</h2>
-              <p>The essentials, answered.</p>
+              <h2 id="faq-title">Questions, answered.</h2>
+              <p>What happens after a check, and how admins review it.</p>
             </div>
             <Accordion type="single" collapsible className="faq-accordion">
               {faqs.map((faq, index) => (
@@ -730,14 +789,14 @@ function LandingPage() {
               <ShieldCheck size={25} />
             </div>
             <div className="final-cta-copy">
-              <span className="section-eyebrow">AXEX SECURITY</span>
-              <h2>Ready to take control?</h2>
-              <p>Connect Discord. Open your dashboard.</p>
+              <span className="section-eyebrow">For your Discord server</span>
+              <h2>Put a check at the door.</h2>
+              <p>Add Axex to set up verification, quarantine and case history.</p>
             </div>
             <Button asChild variant="primary" className="final-cta-button">
               <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
                 <DiscordMark size={16} />
-                <span>Invite Axex</span>
+                <span>Add Axex to Discord</span>
                 <ArrowUpRight size={16} />
               </a>
             </Button>
@@ -750,12 +809,12 @@ function LandingPage() {
               <span className="landing-brand-mark">AX</span>
               <strong>AXEX</strong>
             </a>
-            <p className="landing-footer-note">Security tools for Discord communities.</p>
+            <p className="landing-footer-note">Human checks and clear case history for Discord communities.</p>
             <nav className="landing-footer-links" aria-label="Footer navigation">
               <a href="#platform">Platform</a>
               <a href="#security">Protection</a>
-              <a href="#how-it-works">Setup</a>
-              <a href="#faq">FAQ</a>
+              <a href="#how-it-works">How it works</a>
+              <a href="#faq">Questions</a>
               <a className="landing-footer-top" href="#home">
                 Back to top <ArrowUpRight size={13} aria-hidden="true" />
               </a>
@@ -765,7 +824,7 @@ function LandingPage() {
             <p className="landing-footer-copy">
               © {new Date().getFullYear()} Axex. All rights reserved.
             </p>
-            <span className="landing-footer-caption">Discord security, under control.</span>
+            <span className="landing-footer-caption">Verification, quarantine and case history.</span>
           </div>
         </footer>
       </div>
