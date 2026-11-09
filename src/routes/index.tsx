@@ -32,13 +32,7 @@ import {
   AccordionTrigger,
 } from "../components/ui/accordion";
 import { Badge } from "../components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -602,7 +596,10 @@ function LandingPage() {
                           </span>
                           <span className="capability-number">{feature.number}</span>
                         </div>
-                        <Badge variant="outline" className={"capability-tag capability-tag-" + feature.tone}>
+                        <Badge
+                          variant="outline"
+                          className={"capability-tag capability-tag-" + feature.tone}
+                        >
                           {feature.tag}
                         </Badge>
                       </CardHeader>
