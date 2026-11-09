@@ -10,7 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocsRouteImport } from './routes/docs'
+import { Route as PermissionsRouteImport } from './routes/permissions'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ServersRouteImport } from './routes/servers'
+import { Route as StatusRouteImport } from './routes/status'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ApiAdminsRouteImport } from './routes/api.admins'
 import { Route as ServersGuildIdRouteImport } from './routes/servers.$guildId'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api.auth.callback'
@@ -25,9 +30,34 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PermissionsRoute = PermissionsRouteImport.update({
+  id: '/permissions',
+  path: '/permissions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServersRoute = ServersRouteImport.update({
   id: '/servers',
   path: '/servers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminsRoute = ApiAdminsRouteImport.update({
@@ -73,7 +103,12 @@ const ServersGuildIdAuditRoute = ServersGuildIdAuditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/docs': typeof DocsRoute
+  '/permissions': typeof PermissionsRoute
+  '/privacy': typeof PrivacyRoute
   '/servers': typeof ServersRouteWithChildren
+  '/status': typeof StatusRoute
+  '/terms': typeof TermsRoute
   '/api/admins': typeof ApiAdminsRoute
   '/servers/$guildId': typeof ServersGuildIdRouteWithChildren
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -85,7 +120,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/docs': typeof DocsRoute
+  '/permissions': typeof PermissionsRoute
+  '/privacy': typeof PrivacyRoute
   '/servers': typeof ServersRouteWithChildren
+  '/status': typeof StatusRoute
+  '/terms': typeof TermsRoute
   '/api/admins': typeof ApiAdminsRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/discord': typeof ApiAuthDiscordRoute
@@ -97,7 +137,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/docs': typeof DocsRoute
+  '/permissions': typeof PermissionsRoute
+  '/privacy': typeof PrivacyRoute
   '/servers': typeof ServersRouteWithChildren
+  '/status': typeof StatusRoute
+  '/terms': typeof TermsRoute
   '/api/admins': typeof ApiAdminsRoute
   '/servers/$guildId': typeof ServersGuildIdRouteWithChildren
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -111,7 +156,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/docs'
+    | '/permissions'
+    | '/privacy'
     | '/servers'
+    | '/status'
+    | '/terms'
     | '/api/admins'
     | '/servers/$guildId'
     | '/api/auth/callback'
@@ -123,7 +173,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/docs'
+    | '/permissions'
+    | '/privacy'
     | '/servers'
+    | '/status'
+    | '/terms'
     | '/api/admins'
     | '/api/auth/callback'
     | '/api/auth/discord'
@@ -134,7 +189,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/docs'
+    | '/permissions'
+    | '/privacy'
     | '/servers'
+    | '/status'
+    | '/terms'
     | '/api/admins'
     | '/servers/$guildId'
     | '/api/auth/callback'
@@ -147,7 +207,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DocsRoute: typeof DocsRoute
+  PermissionsRoute: typeof PermissionsRoute
+  PrivacyRoute: typeof PrivacyRoute
   ServersRoute: typeof ServersRouteWithChildren
+  StatusRoute: typeof StatusRoute
+  TermsRoute: typeof TermsRoute
   ApiAdminsRoute: typeof ApiAdminsRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthDiscordRoute: typeof ApiAuthDiscordRoute
@@ -163,11 +228,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/permissions': {
+      id: '/permissions'
+      path: '/permissions'
+      fullPath: '/permissions'
+      preLoaderRoute: typeof PermissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/servers': {
       id: '/servers'
       path: '/servers'
       fullPath: '/servers'
       preLoaderRoute: typeof ServersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admins': {
@@ -258,7 +358,12 @@ const ServersRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DocsRoute: DocsRoute,
+  PermissionsRoute: PermissionsRoute,
+  PrivacyRoute: PrivacyRoute,
   ServersRoute: ServersRouteWithChildren,
+  StatusRoute: StatusRoute,
+  TermsRoute: TermsRoute,
   ApiAdminsRoute: ApiAdminsRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthDiscordRoute: ApiAuthDiscordRoute,

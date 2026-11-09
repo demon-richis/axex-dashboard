@@ -65,6 +65,9 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /Stop fake accounts/);
   assert.match(html, /before they get access/);
   assert.match(html, /DISCORD SECURITY/);
+  assert.match(html, /name="twitter:card"/);
+  assert.ok(html.includes("application/ld+json"));
+  assert.ok(html.includes("og-axex.jpg"));
   assert.doesNotMatch(
     html,
     /Discord security\.|Under control\.|One dashboard\. Every server\.|All servers\. One view\./,
@@ -72,11 +75,14 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /id="platform"/);
   assert.match(html, /id="security"/);
   assert.match(html, /id="how-it-works"/);
+  assert.match(html, /id="case-example"/);
   assert.match(html, /id="faq"/);
   const fragmentLinks = [...html.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
   for (const id of fragmentLinks) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /Add Axex to Discord/);
-  assert.match(html, /See how it works/);
+  assert.match(html, /View sample case/);
+  assert.match(html, /No checkout step in the current install flow/);
+  assert.match(html, /Built for Discord server owners and moderation teams/);
   assert.match(html, /Open dashboard/);
   assert.match(html, /href="\/api\/auth\/discord"/);
   assert.doesNotMatch(
@@ -95,18 +101,42 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
   assert.match(html, /2-day-old account/);
   assert.match(html, /three failed attempts/);
   assert.match(html, /#quarantine/);
+  assert.match(html, /Manage Roles/);
+  assert.match(html, /Manage Channels/);
   const landingSource = await readFile(new URL("../src/routes/index.tsx", import.meta.url), "utf8");
-  const landingStyles = await readFile(
-    new URL("../src/components/landing.css", import.meta.url),
-    "utf8",
-  );
+  const landingStyles =
+    (await readFile(new URL("../src/components/landing.css", import.meta.url), "utf8")) +
+    (await readFile(new URL("../src/components/landing-extra.css", import.meta.url), "utf8"));
   assert.match(landingSource, /new IntersectionObserver/);
   assert.match(landingSource, /aria-current=\{activeSection === "platform"/);
   assert.match(landingStyles, /\.landing-nav > a\[aria-current="location"\]/);
   assert.doesNotMatch(landingStyles, /\.landing-nav > a\[href="#how-it-works"\]/);
   assert.match(landingSource, /The server owner controls dashboard access/);
   assert.doesNotMatch(landingSource, /Access follows your Discord permissions/);
+  assert.match(landingSource, /landing_scroll_depth/);
+  assert.match(landingSource, /faq_expanded/);
+  assert.match(landingSource, /sample_case_opened/);
+  assert.match(landingSource, /sample_case_tab_changed/);
+  assert.match(landingSource, /dashboard_cta_clicked/);
   assert.ok(html.includes("All rights reserved."));
+
+  for (const [path, marker] of [
+    ["/docs", "Set up Axex in your Discord server"],
+    ["/permissions", "Understand the permissions first"],
+    ["/privacy", "What Axex stores"],
+    ["/terms", "Use Axex responsibly"],
+    ["/status", "Live monitoring is not connected"],
+  ]) {
+    const page = await fetch(baseUrl + path);
+    assert.equal(page.status, 200, path + " renders successfully");
+    const pageHtml = await page.text();
+    assert.match(pageHtml, new RegExp(marker));
+    if (path === "/privacy") {
+      assert.match(pageHtml, /raw IP-address fields/i);
+      assert.match(pageHtml, /TOKEN_RETENTION_DAYS/);
+      assert.match(pageHtml, /365 days/);
+    }
+  }
   assert.match(html, /Back to top/);
   assert.doesNotMatch(html, /landing-hero-copy"[^>]*style="[^"]*opacity:0/);
   assert.doesNotMatch(html, /landing-hero-visual"[^>]*style="[^"]*opacity:0/);

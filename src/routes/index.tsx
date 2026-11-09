@@ -10,6 +10,7 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
+  Database,
   FileClock,
   Fingerprint,
   LayoutDashboard,
@@ -17,6 +18,7 @@ import {
   Menu,
   Network,
   Radar,
+  ReceiptText,
   Server,
   ShieldCheck,
   SlidersHorizontal,
@@ -43,6 +45,13 @@ import {
 } from "../components/ui/dialog";
 import "../components/dashboard.css";
 import "../components/landing.css";
+import "../components/landing-extra.css";
+
+const track = (event: string, properties?: Record<string, string | number | boolean>) => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("axex:analytics", { detail: { event, properties } }));
+  }
+};
 
 const loadLanding = createServerFn({ method: "GET" }).handler(async () => {
   const [{ getRequest }, { getSession }] = await Promise.all([
@@ -67,16 +76,49 @@ export const Route = createFileRoute("/")({
   loader: () => loadLanding(),
   head: () => ({
     meta: [
-      { title: "Axex — Discord Security" },
+      { title: "Axex — Discord member security" },
       {
         name: "description",
         content: "Human verification, quarantine and searchable case history for Discord servers.",
       },
-      { property: "og:title", content: "Axex — Discord Security" },
+      { property: "og:title", content: "Axex — Discord member security" },
       {
         property: "og:description",
         content:
-          "Stop fake accounts before they get access. Verify new members and review every case.",
+          "Verify new Discord members, quarantine failed sessions and review every case by ID.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://axex-dashboard.vercel.app/" },
+      { property: "og:image", content: "https://axex-dashboard.vercel.app/og-axex.jpg" },
+      { property: "og:image:type", content: "image/jpeg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Axex — Discord member security" },
+      {
+        name: "twitter:description",
+        content: "Human verification, quarantine controls and searchable case history.",
+      },
+      { name: "twitter:image", content: "https://axex-dashboard.vercel.app/og-axex.jpg" },
+      {
+        name: "twitter:image:alt",
+        content: "Axex Discord security: verification, quarantine and case history.",
+      },
+    ],
+    links: [{ rel: "canonical", href: "https://axex-dashboard.vercel.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Axex",
+          url: "https://axex-dashboard.vercel.app/",
+          applicationCategory: "SecurityApplication",
+          operatingSystem: "Discord",
+          description:
+            "Human verification, quarantine controls and searchable case history for Discord servers.",
+        }),
       },
     ],
   }),
@@ -91,6 +133,8 @@ const capabilities = [
     tag: "Human check",
     tone: "green",
     description: "Give new members a challenge before they can access server channels.",
+    detail:
+      "New members receive a one-time verification link. A successful check moves them out of Unverified and into the server's verified access path.",
   },
   {
     icon: ShieldCheck,
@@ -99,6 +143,8 @@ const capabilities = [
     tag: "Access control",
     tone: "red",
     description: "Lock failed verification sessions and apply the Quarantined role.",
+    detail:
+      "Three failed attempts can lock a verification session. Admins can inspect the case and release a member back to Unverified for another review.",
   },
   {
     icon: Radar,
@@ -107,6 +153,8 @@ const capabilities = [
     tag: "Join activity",
     tone: "amber",
     description: "Flag unusual join spikes and switch raid mode on when thresholds are crossed.",
+    detail:
+      "Server owners configure join thresholds, account-age checks and suspicious-action policy during setup. New account age alone does not automatically quarantine a member.",
   },
   {
     icon: FileClock,
@@ -116,51 +164,57 @@ const capabilities = [
     tone: "green",
     description:
       "Look up an eight-digit ID to review the reason, result and verification timeline.",
+    detail:
+      "Admins with Manage Server can use /verification-log to inspect recorded status, attempts, response time, flags and case events.",
   },
 ];
 
 const surfaces = [
   {
     icon: Bot,
-    title: "Axex bot",
-    label: "Discord",
+    title: "Discord bot",
+    label: "1 · Server",
     tone: "red",
-    description: "Applies roles, limits access and posts case updates in your server.",
+    description: "Applies roles, channel access and case updates.",
   },
   {
     icon: Fingerprint,
     title: "Verification portal",
-    label: "Member checks",
+    label: "2 · Member check",
     tone: "amber",
-    description: "Runs the human challenge and stores each verification result.",
+    description: "Runs the human challenge and returns the result.",
   },
   {
     icon: LayoutDashboard,
-    title: "Web dashboard",
-    label: "Server controls",
+    title: "Dashboard",
+    label: "3 · Admin review",
     tone: "green",
-    description: "Manage connected servers and review administrator access.",
+    description: "Shows connected servers and recorded changes.",
   },
 ];
 
 const steps = [
   {
     number: "01",
+    owner: "Server admin",
     icon: Bot,
     title: "Add Axex",
-    description: "Install the bot. Axex creates the verification roles, channels and panel.",
+    description: "Invite the bot, then run /vsetup with Manage Server permission.",
   },
   {
     number: "02",
+    owner: "Axex",
     icon: Fingerprint,
-    title: "Check new members",
-    description: "Members complete a human verification challenge before getting access.",
+    title: "Configure checks",
+    description: "Axex creates or reuses security roles and channels, then applies access rules.",
   },
   {
     number: "03",
+    owner: "Moderation team",
     icon: FileClock,
-    title: "Review the case",
-    description: "Failed checks are recorded. Admins can inspect each result by Case ID.",
+    title: "Review flagged cases",
+    description:
+      "Use the Case ID and /verification-log. Release a member when the review is complete.",
   },
 ];
 
@@ -168,27 +222,72 @@ const faqs = [
   {
     question: "What happens when verification fails three times?",
     answer:
-      "Axex locks the verification session, applies the Quarantined role and records the outcome under a Case ID.",
+      "Axex locks the verification session, applies the Quarantined role and records the outcome under a Case ID. A moderator can inspect the case and release the member back to Unverified if appropriate.",
   },
   {
     question: "Are new accounts automatically quarantined?",
     answer:
-      "Axex flags accounts below the server's configured age limit. Account age alone is not an automatic quarantine trigger.",
+      "No. Axex flags accounts below the server's configured age limit. The default new-account action is warn; account age alone is not an automatic quarantine trigger.",
   },
   {
-    question: "Can an admin look up a verification?",
+    question: "What permissions does Axex need?",
     answer:
-      "Yes. A server admin with Manage Server can use /verification-log and the eight-digit Case ID to inspect its timeline.",
+      "The bot checks for Manage Roles and Manage Channels during /vsetup. Its role must sit above the roles it manages. Setup also changes channel visibility for Unverified and Quarantined roles; review the permissions guide before continuing.",
+  },
+  {
+    question: "What does Axex store?",
+    answer:
+      "The dashboard stores Discord profile and server-list fields for sign-in and access. The bot and verification portal also record Case IDs, account age, attempts, results, security flags and network signals. The portal may store raw IP addresses for abuse prevention; the privacy page lists the fields and default retention settings.",
+  },
+  {
+    question: "How long is verification data kept?",
+    answer:
+      "The portal cleanup defaults to 30 days for verification tokens and 365 days for audit logs. The delivered callback outbox defaults to 30 days. These values can be changed by deployment settings; bot-side case records and verification-state rows are not covered by those same timers.",
+  },
+  {
+    question: "What if a member is flagged by mistake?",
+    answer:
+      "A moderator can inspect the evidence with /verification-log or /quarantine inspect. If the case is resolved, /quarantine release removes the Quarantined role and requires the member to verify again. This is a moderator review flow, not an automated appeal service.",
+  },
+  {
+    question: "Why not use Discord's built-in AutoMod?",
+    answer:
+      "Keep AutoMod for message content, spam and platform-native rules. Axex adds a human check for new members, role-based quarantine and a case record for verification outcomes; it is designed to complement, not replace, Discord moderation tools.",
+  },
+  {
+    question: "Does Axex slow down my server?",
+    answer:
+      "Verification uses Discord interactions and a separate portal. No public latency guarantee or uptime SLA is published. Check #axex-logs and the Case ID if a member's verification does not complete.",
+  },
+  {
+    question: "How much does Axex cost?",
+    answer:
+      "There is no checkout step in the current bot-install flow. Public pricing and plan limits are not published on this page, so this should not be read as a free-plan promise.",
+  },
+  {
+    question: "How long does setup take?",
+    answer:
+      "There is no fixed time estimate. /vsetup runs a guided sequence that checks bot permissions and role hierarchy, then creates or reuses roles, channels and the verification panel.",
+  },
+  {
+    question: "What happens after I add the bot?",
+    answer:
+      "Run /vsetup as a server admin, review the created or updated roles and channels, then share the panel in #verify. New members can start the human check from there.",
   },
   {
     question: "Who can open the dashboard?",
     answer:
-      "The server owner controls dashboard access. Discord server permissions alone do not grant it.",
+      "The server owner controls dashboard access. Discord server permissions alone do not grant dashboard access; owners can register dashboard admins separately.",
   },
   {
-    question: "Do I need to install the bot?",
+    question: "Which servers can use Axex?",
     answer:
-      "Yes. Add Axex to each Discord server you want to protect. The bot creates the roles, channels and verification panel during setup.",
+      "Axex is designed for Discord servers that can install bots and grant the required role and channel permissions. Review the setup guide and your server's permission policy before inviting it.",
+  },
+  {
+    question: "Where can I get help?",
+    answer:
+      "Use the setup documentation and permissions guide first. Dashboard issues can be reported through the public GitHub issue tracker; do not post private user data, IP addresses, tokens or case details there.",
   },
 ];
 
@@ -242,10 +341,12 @@ function LandingPage() {
   const { signedIn, connected, error, inviteUrl } = Route.useLoaderData();
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [showMobileCta, setShowMobileCta] = useState(false);
+  const [caseTab, setCaseTab] = useState<"summary" | "evidence" | "timeline">("summary");
   const authHref = signedIn ? "/api/auth/discord?consent=1" : "/api/auth/discord";
 
   useEffect(() => {
-    const sectionIds = ["platform", "security", "how-it-works", "faq"] as const;
+    const sectionIds = ["platform", "security", "how-it-works", "case-example", "faq"] as const;
     const sections = sectionIds
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null);
@@ -275,6 +376,39 @@ function LandingPage() {
 
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const hero = document.querySelector<HTMLElement>(".landing-hero");
+    if (!hero || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) setShowMobileCta(!entry.isIntersecting);
+      },
+      { threshold: 0.08 },
+    );
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let sentHalf = false;
+    let sentDeep = false;
+    const onScroll = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+      const progress = window.scrollY / scrollable;
+      if (!sentHalf && progress >= 0.5) {
+        sentHalf = true;
+        track("landing_scroll_depth", { percent: 50 });
+      }
+      if (!sentDeep && progress >= 0.9) {
+        sentDeep = true;
+        track("landing_scroll_depth", { percent: 90 });
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   let notice = "";
@@ -325,17 +459,32 @@ function LandingPage() {
               How it works
             </a>
             <a
+              href="#case-example"
+              aria-current={activeSection === "case-example" ? "location" : undefined}
+              onClick={() => {
+                setActiveSection("case-example");
+                track("sample_case_opened", { placement: "navbar" });
+              }}
+            >
+              Sample case
+            </a>
+            <a
               href="#faq"
               aria-current={activeSection === "faq" ? "location" : undefined}
               onClick={() => setActiveSection("faq")}
             >
               Questions
             </a>
+            <a href="/docs">Docs</a>
           </nav>
 
           <div className="landing-header-actions">
             <Button asChild variant="primary" className="landing-header-cta">
-              <a href={signedIn ? "/servers" : authHref} aria-label="Open Axex dashboard">
+              <a
+                href={signedIn ? "/servers" : authHref}
+                aria-label="Open Axex dashboard"
+                onClick={() => track("dashboard_cta_clicked", { placement: "navbar" })}
+              >
                 <LayoutDashboard size={17} />
                 <span>Open dashboard</span>
                 <ArrowUpRight size={15} />
@@ -380,8 +529,23 @@ function LandingPage() {
                     </a>
                   </DialogClose>
                   <DialogClose asChild>
+                    <a href="#case-example">
+                      Sample case <ArrowUpRight size={15} />
+                    </a>
+                  </DialogClose>
+                  <DialogClose asChild>
                     <a href="#faq">
                       Questions <ArrowUpRight size={15} />
+                    </a>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <a href="/docs">
+                      Docs <ArrowUpRight size={15} />
+                    </a>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <a href="/permissions">
+                      Permissions <ArrowUpRight size={15} />
                     </a>
                   </DialogClose>
                   {signedIn ? (
@@ -440,6 +604,7 @@ function LandingPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Add Axex to Discord"
+                    onClick={() => track("add_axex_clicked", { placement: "hero" })}
                   >
                     <DiscordMark size={17} />
                     <span>Add Axex to Discord</span>
@@ -447,12 +612,21 @@ function LandingPage() {
                   </a>
                 </Button>
                 <Button asChild variant="secondary">
-                  <a href="#how-it-works">
-                    <span>See how it works</span>
+                  <a
+                    href="#case-example"
+                    onClick={() => track("sample_case_opened", { placement: "hero" })}
+                  >
+                    <span>View sample case</span>
                     <ArrowRight size={16} />
                   </a>
                 </Button>
               </div>
+              <p className="landing-cta-note">
+                No checkout step in the current install flow · Remove the bot from Discord anytime.
+              </p>
+              <p className="landing-for-who">
+                Built for Discord server owners and moderation teams.
+              </p>
               <div className="landing-assurance">
                 <span>
                   <Check size={13} /> Human verification
@@ -470,7 +644,7 @@ function LandingPage() {
 
             <motion.div
               className="landing-hero-visual"
-              role="img"
+              role="group"
               aria-label="Illustrative Axex control dashboard preview"
               initial={false}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -665,6 +839,10 @@ function LandingPage() {
                       <CardContent className="capability-card-content">
                         <CardTitle>{feature.title}</CardTitle>
                         <CardDescription>{feature.description}</CardDescription>
+                        <details className="capability-details">
+                          <summary>How it works</summary>
+                          <p>{feature.detail}</p>
+                        </details>
                         <span className="capability-rule" />
                       </CardContent>
                     </Card>
@@ -673,6 +851,45 @@ function LandingPage() {
               })}
             </div>
           </motion.section>
+
+          <section className="landing-reassurance" aria-label="Before you install Axex">
+            <article>
+              <span className="reassurance-icon">
+                <LockKeyhole size={17} />
+              </span>
+              <div>
+                <strong>Know the permissions</strong>
+                <p>Manage Roles, Manage Channels and role hierarchy.</p>
+                <a href="/permissions">
+                  Review requirements <ArrowUpRight size={13} />
+                </a>
+              </div>
+            </article>
+            <article>
+              <span className="reassurance-icon">
+                <Database size={17} />
+              </span>
+              <div>
+                <strong>Know what is stored</strong>
+                <p>Dashboard, bot and portal data are explained separately.</p>
+                <a href="/privacy">
+                  Read data details <ArrowUpRight size={13} />
+                </a>
+              </div>
+            </article>
+            <article>
+              <span className="reassurance-icon">
+                <ReceiptText size={17} />
+              </span>
+              <div>
+                <strong>Pricing clarity</strong>
+                <p>
+                  No checkout step in the current install flow. Public plan details are not
+                  published.
+                </p>
+              </div>
+            </article>
+          </section>
 
           <motion.section
             className="landing-ecosystem"
@@ -688,31 +905,32 @@ function LandingPage() {
                 <i /> How the parts connect
               </span>
               <h2 id="ecosystem-title">
-                From the server <em>to the case record.</em>
+                One case. <em>Three connected parts.</em>
               </h2>
               <p>
-                The bot controls server access, the portal runs the check, and the dashboard gives
-                admins a place to review servers.
+                The bot controls Discord access, the portal checks the member, and the dashboard
+                gives authorised admins a place to review connected servers.
               </p>
-              <a className="text-link" href="#how-it-works">
-                See the member flow <ArrowUpRight size={15} />
-              </a>
             </div>
-            <div className="ecosystem-stack">
-              {surfaces.map((surface) => {
+            <div className="flow-diagram" role="list" aria-label="Axex product flow">
+              {surfaces.map((surface, index) => {
                 const Icon = surface.icon;
                 return (
-                  <article className="ecosystem-card" key={surface.title}>
-                    <span className={"ecosystem-icon " + surface.tone}>
-                      <Icon size={21} />
-                    </span>
-                    <div className="ecosystem-card-copy">
-                      <span>{surface.label}</span>
+                  <div className="flow-diagram-step" role="listitem" key={surface.title}>
+                    <article className={"flow-diagram-node " + surface.tone}>
+                      <span className="flow-diagram-index">{surface.label}</span>
+                      <span className="flow-diagram-icon">
+                        <Icon size={23} />
+                      </span>
                       <h3>{surface.title}</h3>
                       <p>{surface.description}</p>
-                    </div>
-                    <ArrowUpRight size={17} />
-                  </article>
+                    </article>
+                    {index < surfaces.length - 1 && (
+                      <span className="flow-diagram-connector" aria-hidden="true">
+                        <ArrowRight size={19} />
+                      </span>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -734,7 +952,7 @@ function LandingPage() {
               <h2 id="workflow-title">
                 From first join <em>to case review.</em>
               </h2>
-              <p>Here is what happens when a new account needs a check.</p>
+              <p>What the admin configures, what Axex runs, and what moderators review.</p>
             </div>
             <div className="workflow-grid">
               {steps.map((step) => {
@@ -745,6 +963,7 @@ function LandingPage() {
                       <span>{step.number}</span>
                       <Icon size={21} />
                     </div>
+                    <span className="workflow-owner">{step.owner}</span>
                     <h3>{step.title}</h3>
                     <p>{step.description}</p>
                   </article>
@@ -758,13 +977,17 @@ function LandingPage() {
                 </Badge>
                 <h3 id="case-example-title">A new account fails verification.</h3>
                 <p>
-                  A 2-day-old account joins. Axex flags its age, presents a human verification
-                  challenge, and locks the session after three failed attempts.
+                  A 2-day-old account joins. Axex flags its age under the server policy, then gives
+                  the member a human verification challenge. Age alone does not quarantine the
+                  account.
                 </p>
                 <p>
-                  Axex applies the Quarantined role and posts the case to the configured
-                  <code>#quarantine</code> channel.
+                  In this sample, three failed attempts lock the session. Axex applies the
+                  Quarantined role and records the outcome in the configured{" "}
+                  <code>#quarantine</code>
+                  channel and case log.
                 </p>
+                <p className="case-example-team-caption">This is what your moderation team sees.</p>
               </div>
               <Card className="case-example-card">
                 <CardHeader className="case-example-card-header">
@@ -780,28 +1003,96 @@ function LandingPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="case-example-card-content">
-                  <div className="case-example-meta">
-                    <div>
-                      <span>Account age</span>
-                      <strong>2 days</strong>
-                    </div>
-                    <div>
-                      <span>Attempts</span>
-                      <strong>3 / 3</strong>
-                    </div>
-                    <div>
-                      <span>Outcome</span>
-                      <Badge variant="outline" className="case-example-status">
-                        Quarantined
-                      </Badge>
-                    </div>
+                  <div className="case-example-tabs" role="group" aria-label="Sample case view">
+                    {(["summary", "evidence", "timeline"] as const).map((tab) => (
+                      <button
+                        type="button"
+                        key={tab}
+                        aria-pressed={caseTab === tab}
+                        className={caseTab === tab ? "case-example-tab active" : "case-example-tab"}
+                        onClick={() => {
+                          setCaseTab(tab);
+                          track("sample_case_tab_changed", { tab });
+                        }}
+                      >
+                        {tab === "summary"
+                          ? "Summary"
+                          : tab === "evidence"
+                            ? "Evidence"
+                            : "Timeline"}
+                      </button>
+                    ))}
                   </div>
-                  <div className="case-example-channel">
-                    <LockKeyhole size={15} />
-                    <span>#quarantine</span>
-                    <span>Case recorded</span>
+                  <div className="case-example-tab-panel" aria-live="polite">
+                    {caseTab === "summary" && (
+                      <>
+                        <div className="case-example-meta">
+                          <div>
+                            <span>Account age</span>
+                            <strong>2 days</strong>
+                          </div>
+                          <div>
+                            <span>Attempts</span>
+                            <strong>3 / 3</strong>
+                          </div>
+                          <div>
+                            <span>Outcome</span>
+                            <Badge variant="outline" className="case-example-status">
+                              Quarantined
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="case-example-channel">
+                          <LockKeyhole size={15} />
+                          <span>#quarantine</span>
+                          <span>Case recorded</span>
+                        </div>
+                        <p className="case-example-reason">
+                          Reason: Verification attempts exhausted
+                        </p>
+                      </>
+                    )}
+                    {caseTab === "evidence" && (
+                      <ul className="case-example-evidence">
+                        <li>
+                          <span>Account-age check</span>
+                          <strong>Flagged by configured minimum</strong>
+                        </li>
+                        <li>
+                          <span>Human verification</span>
+                          <strong>Three attempts · none passed</strong>
+                        </li>
+                        <li>
+                          <span>Decision</span>
+                          <strong>Attempt limit reached</strong>
+                        </li>
+                        <li>
+                          <span>Age policy</span>
+                          <strong>Warn by default; not quarantine</strong>
+                        </li>
+                      </ul>
+                    )}
+                    {caseTab === "timeline" && (
+                      <ol className="case-example-timeline">
+                        <li>
+                          <time>18:42</time>
+                          <span>Account joined and age check flagged it</span>
+                        </li>
+                        <li>
+                          <time>18:43</time>
+                          <span>Human verification challenge opened</span>
+                        </li>
+                        <li>
+                          <time>18:44</time>
+                          <span>Third attempt failed; session locked</span>
+                        </li>
+                        <li>
+                          <time>18:44</time>
+                          <span>Quarantined role applied and case recorded</span>
+                        </li>
+                      </ol>
+                    )}
                   </div>
-                  <p className="case-example-reason">Reason: Verification attempts exhausted</p>
                   <p className="case-example-note">Sample data, not a live server record.</p>
                 </CardContent>
               </Card>
@@ -824,7 +1115,14 @@ function LandingPage() {
               <h2 id="faq-title">Questions, answered.</h2>
               <p>What happens after a check, and how admins review it.</p>
             </div>
-            <Accordion type="single" collapsible className="faq-accordion">
+            <Accordion
+              type="single"
+              collapsible
+              className="faq-accordion"
+              onValueChange={(value) => {
+                if (value) track("faq_expanded", { topic: value });
+              }}
+            >
               {faqs.map((faq, index) => (
                 <AccordionItem value={"faq-" + index} key={faq.question}>
                   <AccordionTrigger>{faq.question}</AccordionTrigger>
@@ -852,7 +1150,12 @@ function LandingPage() {
               <p>Add Axex to set up verification, quarantine and case history.</p>
             </div>
             <Button asChild variant="primary" className="final-cta-button">
-              <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                href={inviteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => track("add_axex_clicked", { placement: "bottom" })}
+              >
                 <DiscordMark size={16} />
                 <span>Add Axex to Discord</span>
                 <ArrowUpRight size={16} />
@@ -868,9 +1171,28 @@ function LandingPage() {
               <strong>AXEX</strong>
             </a>
             <p className="landing-footer-note">
-              Human checks and clear case history for Discord communities.
+              Built for Discord server owners and moderation teams.
             </p>
             <nav className="landing-footer-links" aria-label="Footer navigation">
+              <a href="/docs">Docs</a>
+              <a href="/permissions">Permissions</a>
+              <a href="/privacy">Privacy & data</a>
+              <a href="/terms">Terms</a>
+              <a href="/status">Status</a>
+              <a
+                href="https://github.com/demon-richis/axex-dashboard/commits/main"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Changelog <ArrowUpRight size={12} aria-hidden="true" />
+              </a>
+              <a
+                href="https://github.com/demon-richis/axex-dashboard/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Support <ArrowUpRight size={12} aria-hidden="true" />
+              </a>
               <a href="#platform">Platform</a>
               <a href="#security">Protection</a>
               <a href="#how-it-works">How it works</a>
@@ -889,6 +1211,21 @@ function LandingPage() {
             </span>
           </div>
         </footer>
+        {showMobileCta && !menuOpen && (
+          <div className="mobile-sticky-cta">
+            <span>Add Axex to your server</span>
+            <a
+              href={inviteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("add_axex_clicked", { placement: "mobile_sticky" })}
+            >
+              <DiscordMark size={16} />
+              Add Axex
+              <ArrowUpRight size={15} />
+            </a>
+          </div>
+        )}
       </div>
     </MotionConfig>
   );
