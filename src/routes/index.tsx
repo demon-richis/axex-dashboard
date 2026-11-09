@@ -200,7 +200,7 @@ function LandingPage() {
                 <AxIcon name="captcha" label="Verification icon" />
                 <span>
                   <b>Axex</b>
-                  <small>APP</small>
+                  <small>App</small>
                 </span>
               </div>
               <h2>Verification Required</h2>
@@ -219,7 +219,7 @@ function LandingPage() {
                 <AxIcon name="scan" label="Verification log icon" />
                 <span>
                   <b>Axex</b>
-                  <small>APP · #axex-logs</small>
+                  <small>App · #axex-logs</small>
                 </span>
               </div>
               <h2>Verification Success</h2>
@@ -273,7 +273,7 @@ function LandingPage() {
                 <AxIcon name="check" label="Success icon" />
                 <span>
                   <b>Axex</b>
-                  <small>DIRECT MESSAGE</small>
+                  <small>Direct message</small>
                 </span>
               </div>
               <h2>Verification Complete</h2>
