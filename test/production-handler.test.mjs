@@ -125,7 +125,7 @@ test("built SSR handler returns 200 HTML with nonce attributes matching its CSP"
     ["/permissions", "Understand the permissions first"],
     ["/privacy", "What Axex stores"],
     ["/terms", "Use Axex responsibly"],
-    ["/status", "Live monitoring is not connected"],
+    ["/status", "Monitoring unavailable"],
   ]) {
     const page = await fetch(baseUrl + path);
     assert.equal(page.status, 200, path + " renders successfully");

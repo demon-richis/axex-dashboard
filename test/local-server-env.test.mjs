@@ -10,6 +10,7 @@ test("local server env loads required private settings without exposing arbitrar
     DISCORD_CLIENT_SECRET: "client-secret",
     DISCORD_REDIRECT_URI: "http://localhost:3000/api/auth/callback",
     BOT_INVITE_URL: "https://discord.com/oauth2/authorize",
+    AXEX_BOT_HEALTH_URL: "https://bot.example.test/health",
     PUBLIC_URL: "http://localhost:3000",
     VITE_PUBLIC_TOKEN: "must-not-copy",
     UNRELATED: "must-not-copy",
@@ -24,6 +25,7 @@ test("local server env loads required private settings without exposing arbitrar
   assert.equal(targetEnvironment.DISCORD_CLIENT_SECRET, "client-secret");
   assert.equal(targetEnvironment.DISCORD_REDIRECT_URI, "http://localhost:3000/api/auth/callback");
   assert.equal(targetEnvironment.BOT_INVITE_URL, "https://discord.com/oauth2/authorize");
+  assert.equal(targetEnvironment.AXEX_BOT_HEALTH_URL, "https://bot.example.test/health");
   assert.equal(targetEnvironment.PUBLIC_URL, "http://localhost:3000");
   assert.equal(targetEnvironment.VITE_PUBLIC_TOKEN, undefined);
   assert.equal(targetEnvironment.UNRELATED, undefined);

@@ -26,21 +26,26 @@ function PrivacyPage() {
     >
       <InfoSection title="Dashboard sign-in and server access">
         <p>
-          Dashboard sign-in requests Discord OAuth scopes <code>identify</code> and{" "}
-          <code>guilds</code>. The dashboard uses the server list to determine which connected
-          servers you can access.
+          Dashboard sign-in requests Discord&apos;s <code>identify</code> scope only. The callback
+          uses the short-lived OAuth token to fetch the user&apos;s identity and discards it; it is
+          not stored. The dashboard does not ask Discord for a user&apos;s guild list.
+        </p>
+        <p>
+          Connected server names, icons, owner IDs and member counts come from Axex&apos;s bot
+          registration records. Access is granted only to the recorded server owner or a dashboard
+          admin explicitly registered by that owner. Server permissions from Discord OAuth are not
+          used as authorization.
         </p>
         <p className="info-callout">
-          <strong>Configuration mismatch to resolve:</strong> AGENTS.md and README.md specify
-          identify-only OAuth, while the current auth code and tests request identify plus guilds
-          and sync guild metadata. The owner must confirm the intended policy before this becomes a
-          final privacy statement. The callback discards its temporary OAuth token after use; it is
-          not stored as a persistent dashboard record.
+          Older sign-ins may have left cached user-to-server permission snapshots in a legacy
+          database table. The current application does not read those rows for server listing or
+          authorization. They are not automatically deleted until an approved retention policy is
+          set.
         </p>
         <ul>
           <li>Discord user ID, username, global name and avatar.</li>
-          <li>Server IDs, names, icons, owner flag and Discord permission bitfield.</li>
-          <li>Last-login and server-list refresh timestamps.</li>
+          <li>Bot-registered server IDs, names, icons, owner IDs and member counts.</li>
+          <li>Last-login timestamps.</li>
           <li>
             Dashboard admin/viewer assignments and dashboard audit events, including actor, action,
             target, details and timestamp.
@@ -143,22 +148,18 @@ function PrivacyPage() {
       </InfoSection>
       <InfoSection title="Website analytics">
         <p>
-          The dashboard includes Vercel Web Analytics and named product events for install-button
-          clicks, dashboard-button clicks, sample-case views, FAQ expansion and 50%/90% scroll
-          depth. These events send the event name and small non-identifying properties such as
-          button placement or selected sample tab; they do not include Discord tokens, Case IDs,
-          usernames or server IDs.
-        </p>
-        <p>
-          The analytics integration is present in the application. Event collection also depends on
-          Web Analytics being enabled for the Vercel project.
+          The site forwards the named install, dashboard CTA, sample-case, FAQ and 50%/90% scroll
+          events to Vercel Web Analytics when available. Only allowlisted event names and small
+          interface properties are sent; Discord IDs, server IDs, tokens and case data are removed
+          by the client-side event filter. Collection requires Web Analytics to be enabled for the
+          Vercel project.
         </p>
       </InfoSection>
       <InfoSection title="Access and security">
         <p>
-          Dashboard access is checked against the server owner, Discord server ownership and
-          dashboard admin assignments. A Discord server permission alone does not automatically
-          grant dashboard access.
+          Dashboard access is checked against the bot&apos;s registered server owner and dashboard
+          admin assignments. A Discord server permission alone does not automatically grant
+          dashboard access.
         </p>
         <p>
           Do not post access tokens, raw IP addresses, private case data or member-identifying

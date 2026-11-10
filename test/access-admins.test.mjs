@@ -7,7 +7,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import * as schema from "../src/lib/db/schema.ts";
 import { getGuildAccess, requireGuildAccess } from "../src/lib/access.server.ts";
 import { addAdmin, changeAdminRole, removeAdmin } from "../src/lib/admins.server.ts";
-import { auditLog, botGuilds, guildAdmins } from "../src/lib/db/schema.ts";
+import { auditLog, botGuilds, guildAdmins, userGuilds } from "../src/lib/db/schema.ts";
 
 const migration = await readFile(
   new URL("../drizzle/0000_dashboard_foundation.sql", import.meta.url),
@@ -145,4 +145,16 @@ test("only the owner can add, change, and remove admins; every successful write 
 test("forbidden and unknown guilds are concealed as 404, never 403", async () => {
   await expectStatus(requireGuildAccess(outsider, guild, db), 404);
   await expectStatus(requireGuildAccess(admin, otherGuild, db), 404);
+});
+
+test("legacy OAuth guild snapshots do not grant access without owner or dashboard admin status", async () => {
+  await db.insert(userGuilds).values({
+    userId: outsider,
+    guildId: guild,
+    name: "Stale Discord snapshot",
+    owner: 1,
+    permissions: "8",
+  });
+  assert.equal(await getGuildAccess(outsider, guild, db), null);
+  await expectStatus(requireGuildAccess(outsider, guild, db), 404);
 });

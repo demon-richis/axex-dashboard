@@ -5,6 +5,7 @@ const localServerEnvironmentKeys = [
   "DISCORD_CLIENT_SECRET",
   "DISCORD_REDIRECT_URI",
   "BOT_INVITE_URL",
+  "AXEX_BOT_HEALTH_URL",
   "PUBLIC_URL",
 ] as const;
 

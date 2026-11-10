@@ -10,25 +10,14 @@ import "../components/picker.css";
 import "../components/dashboard-ux.css";
 
 const loadServers = createServerFn({ method: "GET" }).handler(async () => {
-  const [{ getRequest }, { requireUser }, { listUserGuilds }] = await Promise.all([
+  const [{ getRequest }, { requireUser }, { listAccessibleGuilds }] = await Promise.all([
     import("@tanstack/react-start/server"),
     import("../lib/current-user.server.ts"),
     import("../lib/guilds.server.ts"),
   ]);
   const request = getRequest();
   const user = await requireUser(request);
-  const discordGuilds = await listUserGuilds(user.userId);
-
-  const servers = discordGuilds
-    .filter((guild) => Boolean(guild.installed))
-    .map((guild) => ({
-      guildId: guild.guildId,
-      name: guild.name,
-      icon: guild.icon,
-      memberCount: guild.memberCount ?? 0,
-      lastSeenAt: guild.lastSeenAt ?? new Date(0),
-      role: guild.owner === 1 ? ("owner" as const) : ("admin" as const),
-    }));
+  const servers = await listAccessibleGuilds(user.userId);
 
   const lastCookie = request.headers
     .get("cookie")
@@ -38,8 +27,6 @@ const loadServers = createServerFn({ method: "GET" }).handler(async () => {
   return {
     user,
     servers,
-    availableGuilds: discordGuilds.filter((guild) => !guild.installed),
-    needsReconnect: discordGuilds.length === 0,
     lastServer,
     inviteUrl: process.env["BOT_INVITE_URL"] ?? "https://discord.com/oauth2/authorize",
   };
@@ -55,17 +42,6 @@ export const Route = createFileRoute("/servers")({
   component: ServersRouteView,
 });
 
-function inviteForGuild(base: string, guildId: string): string {
-  try {
-    const url = new URL(base);
-    url.searchParams.set("guild_id", guildId);
-    url.searchParams.set("disable_guild_select", "true");
-    return url.toString();
-  } catch {
-    return base;
-  }
-}
-
 function ServersRouteView() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const normalizedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
@@ -73,8 +49,7 @@ function ServersRouteView() {
 }
 
 function ServerPicker() {
-  const { user, servers, availableGuilds, needsReconnect, lastServer, inviteUrl } =
-    Route.useLoaderData();
+  const { user, servers, lastServer, inviteUrl } = Route.useLoaderData();
   const [query, setQuery] = useState("");
 
   const filteredServers = useMemo(() => {
@@ -82,12 +57,6 @@ function ServerPicker() {
     if (!normalized) return servers;
     return servers.filter((server) => server.name.toLocaleLowerCase().includes(normalized));
   }, [query, servers]);
-
-  const filteredAvailable = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase();
-    if (!normalized) return availableGuilds;
-    return availableGuilds.filter((server) => server.name.toLocaleLowerCase().includes(normalized));
-  }, [availableGuilds, query]);
 
   const onlineCount = servers.filter((server) => isGuildOnline(server.lastSeenAt)).length;
 
@@ -152,28 +121,7 @@ function ServerPicker() {
           )}
         </div>
 
-        {needsReconnect && (
-          <section className="card empty-state picker-empty" role="status">
-            <span className="brand-mark" aria-hidden="true">
-              AX
-            </span>
-            <h2>Refresh your Discord access</h2>
-            <p>
-              Axex now requests access to your manageable server list. Your previous sign-in did not
-              include that permission, so reconnect once and approve the Discord request.
-            </p>
-            <div className="action-row">
-              <a className="button button-primary" href="/api/auth/discord?consent=1">
-                Reconnect Discord ↗
-              </a>
-              <button className="button button-secondary" onClick={() => window.location.reload()}>
-                Refresh
-              </button>
-            </div>
-          </section>
-        )}
-
-        {!needsReconnect && (servers.length > 0 || availableGuilds.length > 0) && (
+        {servers.length > 0 && (
           <div className="picker-controls">
             <label className="picker-search">
               <span className="picker-search-icon" aria-hidden="true">
@@ -193,9 +141,7 @@ function ServerPicker() {
                 </button>
               )}
             </label>
-            <span className="picker-results">
-              {filteredServers.length + filteredAvailable.length} servers
-            </span>
+            <span className="picker-results">{filteredServers.length} servers</span>
           </div>
         )}
 
@@ -257,50 +203,17 @@ function ServerPicker() {
           </section>
         )}
 
-        {filteredAvailable.length > 0 && (
-          <section className="picker-group picker-group-available">
-            <div className="picker-group-head">
-              <div>
-                <span className="eyebrow">AVAILABLE</span>
-                <h2>Add Axex to a server</h2>
-              </div>
-              <span>{filteredAvailable.length}</span>
-            </div>
-
-            <div className="server-grid">
-              {filteredAvailable.map((server) => (
-                <article key={server.guildId} className="card server-card server-card-available">
-                  <ServerIcon server={server} />
-                  <div className="server-card-info">
-                    <strong>{server.name}</strong>
-                    <span>You can manage this server</span>
-                  </div>
-                  <span className="role-badge role-owner">
-                    {server.owner ? "owner" : "manager"}
-                  </span>
-                  <a
-                    className="server-add-button"
-                    href={inviteForGuild(inviteUrl, server.guildId)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Add Axex ↗
-                  </a>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {!needsReconnect && servers.length === 0 && availableGuilds.length === 0 && (
+        {servers.length === 0 && (
           <section className="card empty-state picker-empty">
             <span className="brand-mark" aria-hidden="true">
               AX
             </span>
-            <h2>No manageable servers found</h2>
+            <h2>No connected servers available</h2>
             <p>
-              Discord did not return any servers where your account has management access. Check
-              that your account owns the server or has Manage Server / Administrator permission.
+              The dashboard only lists servers where Axex is installed and you are the server owner
+              or an owner-registered dashboard admin. Discord server permissions are not requested
+              for sign-in. Install Axex in a server you own, or ask its owner to add your dashboard
+              account as an admin.
             </p>
             <div className="action-row">
               <a

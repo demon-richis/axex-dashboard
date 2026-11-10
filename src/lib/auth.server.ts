@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { ensureDashboardSchema, getDb } from "./db/client.server.ts";
-import { userGuilds, users } from "./db/schema.ts";
+import { users } from "./db/schema.ts";
 import { consumeRateLimit } from "./rate-limit.server.ts";
 import { consumeOAuthState, createOAuthState, createSessionCookie } from "./session.server.ts";
 
@@ -11,20 +11,6 @@ const discordUserSchema = z.object({
   username: z.string().min(1).max(100),
   global_name: z.string().max(100).nullable().optional(),
   avatar: z.string().max(128).nullable().optional(),
-});
-
-const discordGuildSchema = z.object({
-  id: z.string().regex(/^\d{17,20}$/),
-  name: z.string().min(1).max(100),
-  icon: z.string().max(128).nullable().optional(),
-  owner: z.boolean().optional().default(false),
-  permissions: z
-    .union([
-      z.string().regex(/^\d+$/),
-      z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).transform(String),
-    ])
-    .nullish()
-    .transform((value) => value ?? "0"),
 });
 
 function parseDiscordPayload<Schema extends z.ZodTypeAny>(
@@ -108,7 +94,7 @@ export async function beginOAuth(
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "identify guilds");
+  url.searchParams.set("scope", "identify");
   if (new URL(request.url).searchParams.get("consent") === "1") {
     url.searchParams.set("prompt", "consent");
   }
@@ -122,7 +108,6 @@ export type OAuthDependencies = {
   now?: number;
   rateLimit?: typeof consumeRateLimit;
   saveUser?: (profile: z.infer<typeof discordUserSchema>) => Promise<void>;
-  syncGuilds?: (userId: string, guilds: z.infer<typeof discordGuildSchema>[]) => Promise<void>;
 };
 
 const callbackParamsSchema = z.object({
@@ -152,37 +137,6 @@ async function saveDiscordUser(profile: z.infer<typeof discordUserSchema>): Prom
         lastLoginAt: new Date(),
       },
     });
-}
-
-async function syncDiscordGuilds(
-  userId: string,
-  guilds: z.infer<typeof discordGuildSchema>[],
-): Promise<void> {
-  await ensureDashboardSchema();
-  const db = getDb();
-  const manageable = guilds.filter((guild) => {
-    const permissions = BigInt(guild.permissions);
-    const administrator = (permissions & 0x8n) === 0x8n;
-    const manageGuild = (permissions & 0x20n) === 0x20n;
-    return guild.owner || administrator || manageGuild;
-  });
-
-  await db.delete(userGuilds).where(eq(userGuilds.userId, userId));
-  if (manageable.length === 0) {
-    return;
-  }
-
-  await db.insert(userGuilds).values(
-    manageable.map((guild) => ({
-      userId,
-      guildId: guild.id,
-      name: guild.name,
-      icon: guild.icon ?? null,
-      owner: guild.owner ? 1 : 0,
-      permissions: guild.permissions,
-      refreshedAt: new Date(),
-    })),
-  );
 }
 
 export async function completeOAuth(
@@ -264,11 +218,6 @@ export async function completeOAuth(
       await tokenResponse.json(),
     );
 
-    if (tokenJson.scope && !tokenJson.scope.split(" ").includes("guilds")) {
-      home.searchParams.set("error", "permissions");
-      return redirect(home.toString(), state.clearCookie);
-    }
-
     accessToken = tokenJson.access_token;
 
     const profileResponse = await fetcher("https://discord.com/api/v10/users/@me", {
@@ -280,25 +229,7 @@ export async function completeOAuth(
     }
 
     const profile = parseDiscordPayload("profile", discordUserSchema, await profileResponse.json());
-    const guildsResponse = await fetcher("https://discord.com/api/v10/users/@me/guilds", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    if (!guildsResponse.ok) {
-      if (guildsResponse.status === 401 || guildsResponse.status === 403) {
-        home.searchParams.set("error", "permissions");
-        return redirect(home.toString(), state.clearCookie);
-      }
-      throw new Error("Discord guild list request failed");
-    }
-
-    const guilds = parseDiscordPayload(
-      "guild list",
-      z.array(discordGuildSchema),
-      await guildsResponse.json(),
-    );
     await (dependencies.saveUser ?? saveDiscordUser)(profile);
-    await (dependencies.syncGuilds ?? syncDiscordGuilds)(profile.id, guilds);
 
     home.searchParams.set("connected", "1");
     return redirect(home.toString(), [state.clearCookie, createSessionCookie(profile.id, now)]);

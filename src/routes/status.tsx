@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import { InfoPage, InfoSection } from "../components/info-page";
 
+const loadStatus = createServerFn({ method: "GET" }).handler(async () => {
+  const { getLiveStatus } = await import("../lib/status.server.ts");
+  return getLiveStatus();
+});
+
+function formatUtc(value: string): string {
+  return new Date(value).toISOString().replace("T", " ").replace("Z", " UTC");
+}
+
 export const Route = createFileRoute("/status")({
+  loader: () => loadStatus(),
   head: () => ({
     meta: [
       { title: "Service status — Axex" },
@@ -16,18 +27,39 @@ export const Route = createFileRoute("/status")({
 });
 
 function StatusPage() {
+  const status = Route.useLoaderData();
+  const statusText = {
+    online: "All monitored services operational",
+    offline: "Bot is offline",
+    degraded: "Monitoring is degraded",
+    unavailable: "Monitoring unavailable",
+  }[status.monitoring];
   return (
     <InfoPage
       eyebrow="Service status"
       title="Status visibility."
-      description="The public status feed is not connected yet. This page does not claim live uptime or component health."
+      description="Live monitoring is best-effort. Missing or stale signals are reported as degraded or unavailable, never as healthy."
     >
       <InfoSection title="Current reporting">
-        <div className="info-status-banner">
+        <div className="info-status-banner" role="status" aria-live="polite">
           <span className="info-status-dot" />
           <div>
-            <strong>Live monitoring is not connected</strong>
-            <p>No automated uptime, incident or latency feed is published on this page.</p>
+            <strong>{statusText}</strong>
+            <p>
+              Bot: {status.botOnline === null ? "unknown" : status.botOnline ? "online" : "offline"}
+              {" · "}API:{" "}
+              {status.apiAvailable === null
+                ? "unknown"
+                : status.apiAvailable
+                  ? "available"
+                  : "unavailable"}
+              {status.latencyMs !== null ? ` · API response ${status.latencyMs} ms` : ""}
+            </p>
+            <p>
+              Last bot heartbeat:{" "}
+              {status.lastHeartbeat ? formatUtc(status.lastHeartbeat) : "not available"}
+            </p>
+            <p>Last checked: {formatUtc(status.updatedAt)}</p>
           </div>
         </div>
       </InfoSection>

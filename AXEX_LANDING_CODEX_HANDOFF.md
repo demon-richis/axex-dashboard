@@ -21,12 +21,12 @@ TanStack Start, React 19, TypeScript, Vite, Tailwind CSS v4, Drizzle ORM, Neon a
 
 ## Owner decisions / production follow-up
 
-1. OAuth scope mismatch (P0): AGENTS.md/README require identify only, but existing src/lib/auth.server.ts and test/oauth-routes.test.mjs request identify guilds and fetch /users/@me/guilds. This revamp intentionally does not alter auth. The owner must choose and reconcile the policy before changing either side.
+1. OAuth scope mismatch (P0): resolved in the follow-up implementation. The dashboard now requests `identify` only, fetches only `/users/@me`, and grants server access only through bot registration and explicit dashboard admin records. Legacy OAuth guild snapshots do not authorize access.
 2. Verify production BOT_INVITE_URL and that the invite requests only the permissions actually needed.
-3. Confirm Vercel environment settings, analytics preference and that no personal data is sent to analytics.
+3. Enable Vercel Web Analytics for the project and verify named event collection in production; the client forwards only allowlisted event names and properties.
 4. Confirm retention behaviour across portal and bot-side case data, including suspicious-attempt rows and raw IP fields. The visible portal cleanup defaults do not establish deletion of all bot-side records.
 5. Add a real privacy contact and self-serve deletion path; obtain legal review of Privacy/Terms before treating them as binding notices.
-6. /status currently describes monitoring as not connected. Wire a real health source before advertising live status.
+6. `/status` has a server-side health integration; configure the optional server-only `AXEX_BOT_HEALTH_URL` to the bot's HTTPS `/health` endpoint and verify heartbeat data in production before treating it as live.
 7. Do a browser-based responsive/accessibility review and validate CTA conversion and sample-case interactions with real users.
 
 ## Verification

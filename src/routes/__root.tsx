@@ -5,9 +5,27 @@ import {
   createRootRouteWithContext,
   useRouter,
 } from "@tanstack/react-router";
+import { createClientOnlyFn } from "@tanstack/react-start";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import appCss from "../styles.css?url";
+
+const sendAnalyticsEvent = createClientOnlyFn((detail: unknown) => {
+  void import("../lib/analytics.client").then(({ sendAnalyticsEvent: send }) => send(detail));
+});
+
+function AnalyticsBridge() {
+  useEffect(() => {
+    const onAnalytics = (event: Event) => {
+      sendAnalyticsEvent((event as CustomEvent<unknown>).detail);
+    };
+    window.addEventListener("axex:analytics", onAnalytics);
+    return () => window.removeEventListener("axex:analytics", onAnalytics);
+  }, []);
+  return null;
+}
 
 function NotFound() {
   return (
@@ -104,6 +122,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      <Analytics />
+      <AnalyticsBridge />
       <Outlet />
     </QueryClientProvider>
   );

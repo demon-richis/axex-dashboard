@@ -13,6 +13,7 @@ Connect `demon-richis/axex-dashboard` to a Vercel project and configure these se
 - `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET`.
 - `DISCORD_REDIRECT_URI`: exact deployed callback URL from step 1.
 - `BOT_INVITE_URL`: Axex Discord installation URL.
+- `AXEX_BOT_HEALTH_URL` (optional): the bot's HTTPS `/health` endpoint. Keep it server-side. The public status page reports monitoring unavailable until this endpoint is configured; heartbeat freshness is read from the shared `dashboard.bot_guilds` table.
 - `PUBLIC_URL`: canonical HTTPS origin of the dashboard.
 
 The Vercel rewrites send application requests through `api/index.mjs`, which forwards them to the built TanStack server entry. Keep the configured Vercel build command so the server bundle is included with that function.
@@ -25,6 +26,7 @@ Never prefix server values with `VITE_`, print them in logs, or put a Discord bo
 2. Review the committed SQL under `drizzle/` and verify the target Neon project. The project is not migrated automatically. Apply with `npm run db:migrate` only when the owner is ready; the Drizzle journal is isolated in `dashboard_meta.__migrations`.
 3. Set all Vercel environment variables, including the canonical redirect URL.
 4. Deploy the dashboard repository and complete a real-browser OAuth test with an owner account. Confirm that guild access reflects `dashboard.bot_guilds.owner_id` and `dashboard.guild_admins`, never Discord roles or permissions.
+5. If enabling live monitoring, configure `AXEX_BOT_HEALTH_URL` to the bot's HTTPS `/health` endpoint. Enable Vercel Web Analytics in the linked Vercel project and verify named events in its dashboard; event forwarding is allowlisted in the client.
 
 ## 4. Operational notes
 
