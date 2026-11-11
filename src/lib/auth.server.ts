@@ -110,6 +110,22 @@ export type OAuthDependencies = {
   saveUser?: (profile: z.infer<typeof discordUserSchema>) => Promise<void>;
 };
 
+class OAuthFailure extends Error {
+  constructor(
+    public readonly code:
+      | "discord_rejected"
+      | "discord_token_invalid"
+      | "discord_profile"
+      | "discord_profile_invalid"
+      | "database"
+      | "oauth",
+    message: string,
+  ) {
+    super(message);
+    this.name = "OAuthFailure";
+  }
+}
+
 const callbackParamsSchema = z.object({
   code: z.string().min(1).max(2048),
   state: z.string().min(1).max(512),
@@ -206,17 +222,28 @@ export async function completeOAuth(
     });
 
     if (!tokenResponse.ok) {
-      throw new Error("Discord token exchange failed");
+      throw new OAuthFailure(
+        "discord_rejected",
+        `Discord rejected the authorization code (HTTP ${tokenResponse.status})`,
+      );
     }
 
-    const tokenJson = parseDiscordPayload(
-      "token",
-      z.object({
-        access_token: z.string().min(1).max(4096),
-        scope: z.string().optional(),
-      }),
-      await tokenResponse.json(),
-    );
+    let tokenJson;
+    try {
+      tokenJson = parseDiscordPayload(
+        "token",
+        z.object({
+          access_token: z.string().min(1).max(4096),
+          scope: z.string().optional(),
+        }),
+        await tokenResponse.json(),
+      );
+    } catch (error) {
+      throw new OAuthFailure(
+        "discord_token_invalid",
+        error instanceof Error ? error.message : "Discord returned an invalid token response",
+      );
+    }
 
     accessToken = tokenJson.access_token;
 
@@ -225,17 +252,40 @@ export async function completeOAuth(
     });
 
     if (!profileResponse.ok) {
-      throw new Error("Discord profile request failed");
+      throw new OAuthFailure(
+        "discord_profile",
+        `Discord profile lookup failed (HTTP ${profileResponse.status})`,
+      );
     }
 
-    const profile = parseDiscordPayload("profile", discordUserSchema, await profileResponse.json());
-    await (dependencies.saveUser ?? saveDiscordUser)(profile);
+    let profile;
+    try {
+      profile = parseDiscordPayload("profile", discordUserSchema, await profileResponse.json());
+    } catch (error) {
+      throw new OAuthFailure(
+        "discord_profile_invalid",
+        error instanceof Error ? error.message : "Discord returned an invalid profile response",
+      );
+    }
+
+    try {
+      await (dependencies.saveUser ?? saveDiscordUser)(profile);
+    } catch (error) {
+      throw new OAuthFailure(
+        "database",
+        error instanceof Error ? error.message : "Dashboard could not save the Discord profile",
+      );
+    }
 
     home.searchParams.set("connected", "1");
     return redirect(home.toString(), [state.clearCookie, createSessionCookie(profile.id, now)]);
   } catch (error) {
-    console.error("[auth] OAuth callback failed:", error instanceof Error ? error.name : "unknown");
-    home.searchParams.set("error", "oauth");
+    const code = error instanceof OAuthFailure ? error.code : "oauth";
+    console.error("[auth] OAuth callback failed:", {
+      code,
+      error: error instanceof Error ? error.name : "unknown",
+    });
+    home.searchParams.set("error", code);
     return redirect(home.toString(), state.clearCookie);
   } finally {
     accessToken = "";
