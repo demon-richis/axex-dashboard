@@ -412,10 +412,26 @@ function LandingPage() {
   }, []);
 
   let notice = "";
-  if (connected) notice = "Discord connected. Your servers are ready.";
-  else if (error === "permissions") notice = "Server access denied. Try reconnecting.";
-  else if (error === "state") notice = "Session expired. Sign in again.";
-  else if (error) notice = "Discord sign-in failed. Try again.";
+  const noticeTone = connected ? "success" : "error";
+  if (connected) {
+    notice = "Discord connected. Your servers are ready.";
+  } else if (error === "permissions") {
+    notice = "Server access denied. Your Discord account is not registered for this server.";
+  } else if (error === "state") {
+    notice = "Sign-in session expired or is invalid. Start Discord sign-in again.";
+  } else if (error === "discord_rejected") {
+    notice = "Discord rejected the authorization code. The sign-in link may be expired or already used.";
+  } else if (error === "discord_token_invalid") {
+    notice = "Discord returned an invalid token response. No session was created.";
+  } else if (error === "discord_profile") {
+    notice = "Discord profile lookup failed. Discord did not return your account details.";
+  } else if (error === "discord_profile_invalid") {
+    notice = "Discord returned an invalid profile response. No session was created.";
+  } else if (error === "database") {
+    notice = "Discord sign-in succeeded, but the dashboard could not save your profile.";
+  } else if (error) {
+    notice = "Discord sign-in failed before a session could be created.";
+  }
 
   return (
     <MotionConfig reducedMotion="user">
@@ -590,7 +606,7 @@ function LandingPage() {
               </p>
               {notice && (
                 <p
-                  className={connected ? "landing-notice success" : "landing-notice"}
+                  className={noticeTone === "success" ? "landing-notice success" : "landing-notice"}
                   role="status"
                 >
                   {connected && <CheckCircle2 size={16} />}
