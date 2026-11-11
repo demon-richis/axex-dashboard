@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { createCsrfMiddleware, createMiddleware, createStart } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page.ts";
@@ -9,11 +9,13 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
     return await next();
   } catch (error) {
     if (error instanceof Response) throw error;
-    console.error(
-      "[Axex Dashboard] Request failed:",
-      error instanceof Error ? error.name : "unknown",
-    );
-    return new Response(renderErrorPage(), {
+    const requestId = randomUUID();
+    console.error("[Axex Dashboard] Request failed:", {
+      requestId,
+      name: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : "Unknown server failure",
+    });
+    return new Response(renderErrorPage(error, requestId), {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" },
     });
