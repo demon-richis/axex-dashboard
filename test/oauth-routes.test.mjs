@@ -104,7 +104,10 @@ test("OAuth callback handles a rejected token exchange without creating a sessio
     { now, rateLimit: allowRate, fetcher: async () => new Response("denied", { status: 400 }) },
   );
   assert.equal(response.status, 302);
-  assert.equal(new URL(response.headers.get("location")).searchParams.get("error"), "oauth");
+  assert.equal(
+    new URL(response.headers.get("location")).searchParams.get("error"),
+    "discord_rejected",
+  );
   assert.ok(
     response.headers
       .getSetCookie()
