@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { renderErrorPage } from "./lib/error-page.ts";
 
 type ServerEntry = {
@@ -17,11 +18,13 @@ export default {
     try {
       return await (await getServerEntry()).fetch(request, env, ctx);
     } catch (error) {
-      console.error(
-        "[Axex Dashboard] Server entry failed:",
-        error instanceof Error ? error.name : "unknown",
-      );
-      return new Response(renderErrorPage(), {
+      const requestId = randomUUID();
+      console.error("[Axex Dashboard] Server entry failed:", {
+        requestId,
+        name: error instanceof Error ? error.name : "unknown",
+        message: error instanceof Error ? error.message : "Unknown server failure",
+      });
+      return new Response(renderErrorPage(error, requestId), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" },
       });
